@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
 import { hash } from 'bcrypt';
 // import { RefreshToken } from '../token/refresh-token.entity';
+import { Publication } from '../publications/publication.entity';
 
 @Entity('users')
 export class User {
@@ -46,10 +48,10 @@ export class User {
   @Column({ type: 'text', nullable: true })
   biography?: string;
 
-  // @OneToMany(() => RefreshToken, (refresh_token) => refresh_token.user, {
-  //   cascade: true,
-  // })
-  // refresh_tokens: RefreshToken[];
+  @OneToMany(() => Publication, (publication) => publication.user, {
+    cascade: true,
+  })
+  publications: Publication[];
 
   @BeforeInsert()
   async hashPassword() {
