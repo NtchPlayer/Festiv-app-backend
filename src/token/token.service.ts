@@ -150,16 +150,12 @@ export class TokenService {
     accessToken: string,
     refreshToken?: string,
   ): AuthPayloadDto {
-    delete user.password;
-    delete user.createdAt;
-    delete user.updatedAt;
     return {
-      user: user,
-      payload: {
-        type: 'bearer',
-        token: accessToken,
-        ...(refreshToken ? { refresh_token: refreshToken } : {}),
-      },
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      accessToken,
+      ...(refreshToken ? { refresh_token: refreshToken } : {}),
     };
   }
 
