@@ -4,12 +4,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-
-// Service
-import { AppService } from './app.service';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 // Entity
 import { User } from './users/user.entity';
+import { Publication } from './publications/publication.entity';
 // import { RefreshToken } from './token/refresh-token.entity';
 
 // Controller
@@ -18,6 +18,7 @@ import { AppController } from './app.controller';
 // Module
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { PublicationsModule } from './publications/publications.module';
 
 @Module({
   imports: [
@@ -42,13 +43,19 @@ import { UsersModule } from './users/users.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User],
+      entities: [User, Publication],
       synchronize: Boolean(process.env.IS_DEV) || false,
     }),
     AuthModule,
     UsersModule,
+    PublicationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
