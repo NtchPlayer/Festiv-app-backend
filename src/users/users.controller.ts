@@ -13,6 +13,7 @@ import { UsersService } from './users.service';
 import { TokenService } from '../token/token.service';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -21,6 +22,7 @@ export class UsersController {
     private readonly tokenService: TokenService,
   ) {}
 
+  @Public()
   @Post('signup')
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
