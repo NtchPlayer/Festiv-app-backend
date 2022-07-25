@@ -14,6 +14,7 @@ import {
   // RefreshTokenDOT
 } from './dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { Public } from '../decorators/public.decorator';
 
 @Controller()
 export class AuthController {
@@ -22,8 +23,10 @@ export class AuthController {
     private readonly tokenService: TokenService,
   ) {}
 
+  @Public()
   @Post('auth/login')
-  async login(@Body() authLoginDto: AuthLoginDto) {
+  async login(@Body() authLoginDto: AuthLoginDto, @Request() req) {
+    console.log(req.user);
     return this.authService.login(authLoginDto);
   }
 
