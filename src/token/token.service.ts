@@ -51,7 +51,10 @@ export class TokenService {
       subject: String(user.id),
     };
 
-    return this.jwtService.signAsync({ username: user.username }, opts);
+    return this.jwtService.signAsync(
+      { username: user.username, email: user.email },
+      opts,
+    );
   }
 
   // public async generateRefreshToken(
