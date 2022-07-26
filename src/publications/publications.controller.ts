@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Request,
   Delete,
+  Put,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
@@ -27,18 +28,24 @@ export class PublicationsController {
     return this.publicationsService.findOne(id);
   }
 
-  // @Post('/add')
-  // async create(@Body() createUserDto: CreatePostDto) {
-  //   const user = await this.publicationsService.create(createUserDto);
-  // }
-  //
-  // @Post('/update')
-  // async update(@Request() req, @Body() data: UpdatePostDto) {
-  //   return this.publicationsService.updateUser(req.user.userId, data);
-  // }
-  //
-  // @Delete('/:id')
-  // async delete(@Param('id', ParseIntPipe) id: number) {
-  //   return this.publicationsService.delete(id);
-  // }
+  @Post('/add')
+  async create(
+    @Body() createPublicationDto: CreatePublicationDto,
+    @Request() req,
+  ) {
+    return this.publicationsService.create(createPublicationDto, req.user);
+  }
+
+  @Put('/:id')
+  async update(
+    @Body() updatePublicationDto: UpdatePublicationDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.publicationsService.update(updatePublicationDto, id);
+  }
+
+  @Delete('/:id')
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.publicationsService.deleteOne(id);
+  }
 }
