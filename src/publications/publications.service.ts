@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Publication } from './publication.entity';
@@ -20,6 +21,12 @@ export class PublicationsService {
 
   async findAll(): Promise<Publication[]> {
     return this.publicationsRepository.find({
+      relations: {
+        user: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
       select: {
         id: true,
         createdAt: true,
@@ -82,7 +89,28 @@ export class PublicationsService {
     }
   }
 
-  deleteOne(id: number) {
-    return this.publicationsRepository.delete(id);
+  async deleteOne(id: number, userId: string) {
+    try {
+      const publication = await this.publicationsRepository.findOneOrFail({
+        where: {
+          id,
+        },
+        relations: {
+          user: true,
+        },
+        select: {
+          user: {
+            id: true,
+          },
+        },
+      });
+      if (publication.user.id === parseInt(userId)) {
+        return this.publicationsRepository.delete(id);
+      } else {
+        throw new UnauthorizedException();
+      }
+    } catch {
+      throw new NotFoundException("This publication don't exist.");
+    }
   }
 }
