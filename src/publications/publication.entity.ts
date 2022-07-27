@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Media } from '../medias/media.entity';
 
 @Entity('publications')
 export class Publication {
@@ -38,4 +40,9 @@ export class Publication {
 
   @ManyToOne(() => User, (user) => user.publications)
   user: User;
+
+  @OneToMany(() => Media, (media) => media.publication, {
+    cascade: true,
+  })
+  medias: Media[];
 }
