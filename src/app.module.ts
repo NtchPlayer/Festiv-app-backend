@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 // Entity
 import { User } from './users/user.entity';
 import { Publication } from './publications/publication.entity';
+import { Media } from './medias/media.entity';
 // import { RefreshToken } from './token/refresh-token.entity';
 
 // Controller
@@ -19,6 +20,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PublicationsModule } from './publications/publications.module';
+import { MediasModule } from './medias/medias.module';
 
 @Module({
   imports: [
@@ -34,6 +36,10 @@ import { PublicationsModule } from './publications/publications.module';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         IS_DEV: Joi.boolean().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().required(),
+        AWS_SECRET_ACCESS_KEY: Joi.string().required(),
+        AWS_REGION: Joi.string().required(),
+        AWS_BUCKET: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -43,12 +49,13 @@ import { PublicationsModule } from './publications/publications.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Publication],
+      entities: [User, Publication, Media],
       synchronize: Boolean(process.env.IS_DEV) || false,
     }),
     AuthModule,
     UsersModule,
     PublicationsModule,
+    MediasModule,
   ],
   controllers: [AppController],
   providers: [
