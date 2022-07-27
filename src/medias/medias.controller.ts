@@ -14,7 +14,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 
-import { UploadService } from './upload.service';
+import { MediasService } from './medias.service';
 import { Express } from 'express';
 
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -22,7 +22,7 @@ import { imageFileFilter } from './file-helpers';
 
 @Controller('medias')
 export class MediasController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(private readonly mediasService: MediasService) {}
 
   // @Get()
   // getAll(): Promise<Publication[]> {
@@ -37,7 +37,7 @@ export class MediasController {
   @Post('avatar')
   @UseInterceptors(FileInterceptor('file'))
   uploadAvatar(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadService.addAvatar(
+    return this.mediasService.addAvatar(
       file.buffer,
       file.originalname,
       file.mimetype,
@@ -47,7 +47,7 @@ export class MediasController {
   @Post('post')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadService.addPostImage(
+    return this.mediasService.addPostImage(
       file.buffer,
       file.originalname,
       file.mimetype,

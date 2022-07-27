@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 
 // Service
-import { UploadService } from './upload.service';
+import { MediasService } from './medias.service';
 import { FilesService } from './files.service';
 import { MediasController } from './medias.controller';
 
 @Module({
-  providers: [UploadService, FilesService],
+  providers: [MediasService, FilesService],
   controllers: [MediasController],
-  exports: [UploadService],
+  exports: [MediasService],
 })
 export class MediasModule {}

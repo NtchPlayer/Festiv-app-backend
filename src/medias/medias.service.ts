@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { FilesService } from './files.service';
 
 @Injectable()
-export class UploadService {
+export class MediasService {
   constructor(private readonly filesService: FilesService) {}
 
   async addAvatar(imageBuffer: Buffer, fileName: string, contentType: string) {
