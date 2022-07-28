@@ -5,6 +5,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Publication } from './publication.entity';
+import { MediasService } from '../medias/medias.service';
 import { User } from '../users/user.entity';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Repository } from 'typeorm';
@@ -17,13 +18,15 @@ export class PublicationsService {
   constructor(
     @InjectRepository(Publication)
     private publicationsRepository: Repository<Publication>,
-    private usersService: UsersService,
+    private readonly mediaService: MediasService,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAll(): Promise<Publication[]> {
     return this.publicationsRepository.find({
       relations: {
         user: true,
+        medias: true,
       },
       order: {
         createdAt: 'DESC',
@@ -32,9 +35,12 @@ export class PublicationsService {
         id: true,
         createdAt: true,
         content: true,
-        media: true,
         user: {
           username: true,
+        },
+        medias: {
+          url: true,
+          alt: true,
         },
       },
     });
@@ -48,14 +54,18 @@ export class PublicationsService {
         },
         relations: {
           user: true,
+          medias: true,
         },
         select: {
           id: true,
           createdAt: true,
           content: true,
-          media: true,
           user: {
             username: true,
+          },
+          medias: {
+            url: true,
+            alt: true,
           },
         },
       });
@@ -66,16 +76,17 @@ export class PublicationsService {
 
   async create(
     createPublicationDto: CreatePublicationDto,
-    file: Express.Multer.File,
+    files: Express.Multer.File[],
     user: User,
   ) {
     const publication = new Publication();
     const userInfos = await this.usersService.findById(user.id);
+    for (const file of files) {
+      await this.mediaService.addPublicationMedia(file, publication);
+    }
 
     publication.content = createPublicationDto.content;
-    // publication.media = createPublicationDto.media;
     publication.user = userInfos;
-    console.log(file);
     try {
       await this.publicationsRepository.save(publication);
     } catch {
