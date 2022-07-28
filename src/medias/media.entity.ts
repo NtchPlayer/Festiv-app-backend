@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToOne,
 } from 'typeorm';
 import { Publication } from '../publications/publication.entity';
+import { User } from '../users/user.entity';
 
 @Entity('medias')
 export class Media {
@@ -30,7 +32,10 @@ export class Media {
   })
   updatedAt: Date;
 
-  @Column('varchar', { length: 500 })
+  @Column('text')
+  url: string;
+
+  @Column('text')
   key: string;
 
   @Column('varchar', { length: 250, nullable: true })
@@ -38,4 +43,7 @@ export class Media {
 
   @ManyToOne(() => Publication, (publication) => publication.medias)
   publication: Publication;
+
+  @OneToOne(() => User)
+  user: User;
 }
