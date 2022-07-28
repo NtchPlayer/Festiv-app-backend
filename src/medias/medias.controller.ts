@@ -69,8 +69,8 @@ export class MediasController {
   //   return this.publicationsService.update(updatePublicationDto, id);
   // }
   //
-  // @Delete('/:id')
-  // async delete(@Param('id', ParseIntPipe) id: number, @Request() req) {
-  //   return this.publicationsService.deleteOne(id, req.user.userId);
-  // }
+  @Delete('/:id')
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.mediasService.deletePublicationMedia(id);
+  }
 }
