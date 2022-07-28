@@ -41,6 +41,9 @@ export class Media {
   @Column('varchar', { length: 250, nullable: true })
   alt: string;
 
+  @Column('varchar', { length: 50 })
+  type: string;
+
   @ManyToOne(() => Publication, (publication) => publication.medias)
   publication: Publication;
 
