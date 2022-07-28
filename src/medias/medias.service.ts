@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from "@nestjs/common";
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { Express } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +10,7 @@ import { UsersService } from '../users/users.service';
 // Entity
 import { Media } from './media.entity';
 import { User } from '../users/user.entity';
+import { Publication } from '../publications/publication.entity';
 
 @Injectable()
 export class MediasService {
@@ -33,6 +34,7 @@ export class MediasService {
 
     media.url = upload.Location;
     media.key = upload.Key;
+    media.type = file.mimetype;
     media.user = userInfos;
 
     try {
@@ -43,15 +45,27 @@ export class MediasService {
   }
 
   async addPublicationMedia(
-    imageBuffer: Buffer,
-    fileName: string,
-    contentType: string,
+    file: Express.Multer.File,
+    publication: Publication,
   ) {
-    return this.filesService.uploadFile(
-      imageBuffer,
-      fileName,
-      'posts',
-      contentType,
+    const media = new Media();
+
+    const upload = await this.filesService.uploadFile(
+      file.buffer,
+      file.originalname,
+      'publications',
+      file.mimetype,
     );
+
+    media.url = upload.Location;
+    media.key = upload.Key;
+    media.type = file.mimetype;
+    media.publication = publication;
+
+    try {
+      await this.mediasRepository.save(media);
+    } catch {
+      throw new UnprocessableEntityException('An error has occurred');
+    }
   }
 }
