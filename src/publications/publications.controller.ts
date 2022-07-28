@@ -8,11 +8,17 @@ import {
   Request,
   Delete,
   Put,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Publication } from './publication.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { imageFileFilter } from '../medias/file-helpers';
+import { Express } from 'express';
 
 @Controller('publications')
 export class PublicationsController {
@@ -29,11 +35,25 @@ export class PublicationsController {
   }
 
   @Post('/add')
-  async create(
-    @Body() createPublicationDto: CreatePublicationDto,
+  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('filename', {
+      fileFilter: imageFileFilter,
+    }),
+  )
+  uploadFile(
     @Request() req,
+    @Body() createPublicationDto: CreatePublicationDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.publicationsService.create(createPublicationDto, req.user);
+    if (!file || req.fileValidationError) {
+      throw new BadRequestException('Invalid file provided');
+    }
+    return this.publicationsService.create(
+      createPublicationDto,
+      file,
+      req.user,
+    );
   }
 
   @Put('/:id')
