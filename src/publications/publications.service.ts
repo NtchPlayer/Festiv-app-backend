@@ -10,6 +10,7 @@ import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
+import { Express } from 'express';
 
 @Injectable()
 export class PublicationsService {
@@ -63,13 +64,18 @@ export class PublicationsService {
     }
   }
 
-  async create(createPublicationDto: CreatePublicationDto, user: User) {
+  async create(
+    createPublicationDto: CreatePublicationDto,
+    file: Express.Multer.File,
+    user: User,
+  ) {
     const publication = new Publication();
     const userInfos = await this.usersService.findById(user.id);
 
     publication.content = createPublicationDto.content;
     // publication.media = createPublicationDto.media;
     publication.user = userInfos;
+    console.log(file);
     try {
       await this.publicationsRepository.save(publication);
     } catch {
