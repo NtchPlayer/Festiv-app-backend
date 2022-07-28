@@ -81,14 +81,15 @@ export class PublicationsService {
   ) {
     const publication = new Publication();
     const userInfos = await this.usersService.findById(user.id);
-    for (const file of files) {
-      await this.mediaService.addPublicationMedia(file, publication);
-    }
 
     publication.content = createPublicationDto.content;
     publication.user = userInfos;
+    const publicationPost = await this.publicationsRepository.save(publication);
     try {
-      return this.publicationsRepository.save(publication);
+      for (const file of files) {
+        await this.mediaService.addPublicationMedia(file, publicationPost);
+      }
+      return publicationPost;
     } catch {
       throw new UnprocessableEntityException('An error has occurred');
     }
