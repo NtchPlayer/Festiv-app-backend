@@ -9,15 +9,13 @@ import {
   Delete,
   Put,
   UseInterceptors,
-  UploadedFile,
-  BadRequestException,
+  UploadedFiles,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Publication } from './publication.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { imageFileFilter } from '../medias/file-helpers';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 
 @Controller('publications')
@@ -35,23 +33,15 @@ export class PublicationsController {
   }
 
   @Post('/add')
-  @UseInterceptors(FileInterceptor('file'))
-  @UseInterceptors(
-    FileInterceptor('filename', {
-      fileFilter: imageFileFilter,
-    }),
-  )
-  uploadFile(
+  @UseInterceptors(FilesInterceptor('files[]', 4))
+  create(
     @Request() req,
     @Body() createPublicationDto: CreatePublicationDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    if (!file || req.fileValidationError) {
-      throw new BadRequestException('Invalid file provided');
-    }
     return this.publicationsService.create(
       createPublicationDto,
-      file,
+      files,
       req.user,
     );
   }
