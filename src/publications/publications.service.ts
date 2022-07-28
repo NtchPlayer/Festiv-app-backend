@@ -88,7 +88,7 @@ export class PublicationsService {
     publication.content = createPublicationDto.content;
     publication.user = userInfos;
     try {
-      await this.publicationsRepository.save(publication);
+      return this.publicationsRepository.save(publication);
     } catch {
       throw new UnprocessableEntityException('An error has occurred');
     }
