@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Express } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,7 +53,7 @@ export class MediasService {
     const upload = await this.filesService.uploadFile(
       file.buffer,
       file.originalname,
-      'publications',
+      `publications/${publication.id}`,
       file.mimetype,
     );
 
@@ -66,6 +66,16 @@ export class MediasService {
       await this.mediasRepository.save(media);
     } catch {
       throw new UnprocessableEntityException('An error has occurred');
+    }
+  }
+
+  async deletePublicationMedia(id: number) {
+    try {
+      const publication = await this.mediasRepository.findOneBy({ id });
+      await this.filesService.deleteFile(publication.key);
+      return this.mediasRepository.delete(id);
+    } catch {
+      throw new NotFoundException('An error occur on delete media');
     }
   }
 }
