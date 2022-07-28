@@ -115,14 +115,22 @@ export class PublicationsService {
         },
         relations: {
           user: true,
+          medias: true,
         },
         select: {
           user: {
             id: true,
           },
+          medias: {
+            id: true,
+            key: true,
+          },
         },
       });
       if (publication.user.id === parseInt(userId)) {
+        for (const file of publication.medias) {
+          await this.mediaService.deletePublicationMedia(file.id);
+        }
         return this.publicationsRepository.delete(id);
       } else {
         throw new UnauthorizedException();
