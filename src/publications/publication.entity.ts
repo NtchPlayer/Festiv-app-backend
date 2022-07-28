@@ -35,9 +35,6 @@ export class Publication {
   @Column('varchar', { length: 500 })
   content: string;
 
-  @Column('text', { nullable: true })
-  media: string;
-
   @ManyToOne(() => User, (user) => user.publications)
   user: User;
 
