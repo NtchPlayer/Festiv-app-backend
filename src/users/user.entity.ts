@@ -6,10 +6,13 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { hash } from 'bcrypt';
 // import { RefreshToken } from '../token/refresh-token.entity';
 import { Publication } from '../publications/publication.entity';
+import { Media } from '../medias/media.entity';
 
 @Entity('users')
 export class User {
@@ -52,6 +55,10 @@ export class User {
     cascade: true,
   })
   publications: Publication[];
+
+  @OneToOne(() => Media)
+  @JoinColumn()
+  media: Media;
 
   @BeforeInsert()
   async hashPassword() {
