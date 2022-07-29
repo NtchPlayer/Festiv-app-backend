@@ -1,8 +1,8 @@
 import {
-  Injectable,
+  Injectable, NotFoundException,
   // NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+  UnprocessableEntityException
+} from "@nestjs/common";
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { Repository } from 'typeorm';
@@ -52,6 +52,27 @@ export class UsersService {
 
   async findByEmail(email: string) {
     return await this.usersRepository.findOneByOrFail({ email });
+  }
+  async findByUsername(username: string) {
+    try {
+      return await this.usersRepository.findOneOrFail({
+        where: {
+          username,
+        },
+        select: {
+          username: true,
+          createdAt: true,
+          biography: true,
+          birthday: true,
+          avatar: {
+            url: true,
+            alt: true,
+          },
+        },
+      });
+    } catch {
+      throw new NotFoundException("This user don't exist.");
+    }
   }
 
   async updateUser(userId: number, data: UpdateUserDto) {
