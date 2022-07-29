@@ -10,6 +10,7 @@ import {
   Put,
   UseInterceptors,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
@@ -22,9 +23,10 @@ import { Express } from 'express';
 export class PublicationsController {
   constructor(private readonly publicationsService: PublicationsService) {}
 
-  @Get()
-  getAll(): Promise<Publication[]> {
-    return this.publicationsService.findAll();
+  @Get('/')
+  getAll(@Query('username') username?: string) {
+    console.log(username);
+    return this.publicationsService.findAll(username);
   }
 
   @Get('/:id')
