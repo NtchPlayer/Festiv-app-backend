@@ -41,9 +41,9 @@ export class UsersController {
     return payload;
   }
 
-  @Get(':id')
-  show(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.showById(id);
+  @Get(':username')
+  show(@Param('username') username: string) {
+    return this.usersService.findByUsername(username);
   }
 
   @UseGuards(JwtAuthGuard)
