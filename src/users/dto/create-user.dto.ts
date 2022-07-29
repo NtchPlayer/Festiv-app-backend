@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -15,4 +22,12 @@ export class CreateUserDto {
   //   message: 'Password is too week!',
   // })
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isProfessional: boolean;
+
+  @IsOptional()
+  @IsArray()
+  tags: [string];
 }
