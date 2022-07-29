@@ -58,7 +58,7 @@ export class User {
 
   @OneToOne(() => Media)
   @JoinColumn()
-  media: Media;
+  avatar: Media;
 
   @BeforeInsert()
   async hashPassword() {
