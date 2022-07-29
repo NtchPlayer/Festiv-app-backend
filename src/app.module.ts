@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { User } from './users/user.entity';
 import { Publication } from './publications/publication.entity';
 import { Media } from './medias/media.entity';
+import { Tag } from './tags/tag.entity';
 // import { RefreshToken } from './token/refresh-token.entity';
 
 // Controller
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PublicationsModule } from './publications/publications.module';
 import { MediasModule } from './medias/medias.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -49,13 +51,14 @@ import { MediasModule } from './medias/medias.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Publication, Media],
+      entities: [User, Publication, Media, Tag],
       synchronize: Boolean(process.env.IS_DEV) || false,
     }),
     AuthModule,
     UsersModule,
     PublicationsModule,
     MediasModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [
