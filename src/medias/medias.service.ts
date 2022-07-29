@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Express } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,7 +57,7 @@ export class MediasService {
     const upload = await this.filesService.uploadFile(
       file.buffer,
       file.originalname,
-      `publications/${publication.id}`,
+      `publications/${publication.folder}`,
       file.mimetype,
     );
 
