@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUrl } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreatePublicationDto {
   @IsNotEmpty()
