@@ -13,6 +13,7 @@ import { hash } from 'bcrypt';
 // import { RefreshToken } from '../token/refresh-token.entity';
 import { Publication } from '../publications/publication.entity';
 import { Media } from '../medias/media.entity';
+import { Tag } from '../tags/tag.entity';
 
 @Entity('users')
 export class User {
@@ -51,6 +52,9 @@ export class User {
   @Column({ type: 'text', nullable: true })
   biography?: string;
 
+  @Column({ type: 'boolean', default: false })
+  isProfessional: boolean;
+
   @OneToMany(() => Publication, (publication) => publication.user, {
     cascade: true,
   })
@@ -59,6 +63,11 @@ export class User {
   @OneToOne(() => Media)
   @JoinColumn()
   avatar: Media;
+
+  @OneToMany(() => Tag, (tag) => tag.user, {
+    cascade: true,
+  })
+  tags: Tag[];
 
   @BeforeInsert()
   async hashPassword() {
