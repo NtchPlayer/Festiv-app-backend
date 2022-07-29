@@ -41,10 +41,12 @@ export class Media {
   @Column('varchar', { length: 250, nullable: true })
   alt: string;
 
-  @Column('varchar', { length: 50 })
+  @Column('varchar', { length: 20 })
   type: string;
 
-  @ManyToOne(() => Publication, (publication) => publication.medias)
+  @ManyToOne(() => Publication, (publication) => publication.medias, {
+    onDelete: 'CASCADE',
+  })
   publication: Publication;
 
   @OneToOne(() => User)
