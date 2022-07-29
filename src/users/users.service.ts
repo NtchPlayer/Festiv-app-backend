@@ -1,9 +1,10 @@
 import {
-  Injectable, NotFoundException,
-  // NotFoundException,
-  UnprocessableEntityException
-} from "@nestjs/common";
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { User } from './user.entity';
+import { Tag } from '../tags/tag.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,19 +18,30 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    const isEmailExist = await this.findByEmail(createUserDto.email);
+    if (isEmailExist) {
+      throw new UnprocessableEntityException('Email already in use');
+    }
+
     const user = new User();
     user.username = createUserDto.username;
     user.email = createUserDto.email;
     user.password = createUserDto.password;
+    user.isProfessional = createUserDto.isProfessional;
 
-    try {
-      await this.findByEmail(createUserDto.email);
-    } catch (err) {
-      await this.usersRepository.save(user);
-      delete user.password;
-      return user;
+    if (user.isProfessional) {
+      user.tags = [];
+      for (const tag of createUserDto.tags) {
+        const tagEntity = new Tag();
+        tagEntity.content = tag;
+        tagEntity.user = user;
+        user.tags.push(tagEntity);
+        console.log(tagEntity);
+      }
     }
-    throw new UnprocessableEntityException('Email already in use');
+    const userSave = await this.usersRepository.save(user);
+    delete user.password;
+    return userSave;
   }
 
   public async validateCredentials(
@@ -51,8 +63,9 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return await this.usersRepository.findOneByOrFail({ email });
+    return await this.usersRepository.findOneBy({ email });
   }
+
   async findByUsername(username: string) {
     try {
       return await this.usersRepository.findOneOrFail({
