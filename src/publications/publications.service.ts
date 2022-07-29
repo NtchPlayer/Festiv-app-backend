@@ -5,20 +5,22 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Publication } from './publication.entity';
-import { MediasService } from '../medias/medias.service';
+import { Media } from '../medias/media.entity';
+import { FilesService } from '../medias/files.service';
 import { User } from '../users/user.entity';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from '../users/users.service';
 import { Express } from 'express';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class PublicationsService {
   constructor(
     @InjectRepository(Publication)
     private publicationsRepository: Repository<Publication>,
-    private readonly mediaService: MediasService,
+    private readonly filesService: FilesService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -93,12 +95,26 @@ export class PublicationsService {
 
     publication.content = createPublicationDto.content;
     publication.user = userInfos;
-    const publicationPost = await this.publicationsRepository.save(publication);
-    try {
+    if (files) {
+      publication.medias = [];
+      publication.folder = uuid();
       for (const file of files) {
-        await this.mediaService.addPublicationMedia(file, publicationPost);
+        const mediaEntity = new Media();
+        const upload = await this.filesService.uploadFile(
+          file.buffer,
+          file.originalname,
+          `publications/${publication.folder}`,
+          file.mimetype,
+        );
+        mediaEntity.url = upload.Location;
+        mediaEntity.key = upload.Key;
+        mediaEntity.type = file.mimetype;
+        publication.medias.push(mediaEntity);
+        console.log(mediaEntity);
       }
-      return publicationPost;
+    }
+    try {
+      return await this.publicationsRepository.save(publication);
     } catch {
       throw new UnprocessableEntityException('An error has occurred');
     }
@@ -131,14 +147,13 @@ export class PublicationsService {
             id: true,
           },
           medias: {
-            id: true,
             key: true,
           },
         },
       });
       if (publication.user.id === parseInt(userId)) {
         for (const file of publication.medias) {
-          await this.mediaService.deletePublicationMedia(file.id);
+          await this.filesService.deleteFile(file.key);
         }
         return this.publicationsRepository.delete(id);
       } else {
