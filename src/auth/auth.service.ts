@@ -12,10 +12,8 @@ export class AuthService {
   ) {}
 
   async login(authLoginDto: AuthLoginDto) {
-    let user: User;
-    try {
-      user = await this.usersService.findByEmail(authLoginDto.email);
-    } catch (e) {
+    const user = await this.usersService.findByEmail(authLoginDto.email);
+    if (!user) {
       throw new UnauthorizedException("This user don't exist.");
     }
     const valid = user
