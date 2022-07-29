@@ -35,7 +35,12 @@ export class Publication {
   @Column('varchar', { length: 500 })
   content: string;
 
-  @ManyToOne(() => User, (user) => user.publications)
+  @Column('varchar', { length: 36, nullable: true })
+  folder: string;
+
+  @ManyToOne(() => User, (user) => user.publications, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @OneToMany(() => Media, (media) => media.publication, {
