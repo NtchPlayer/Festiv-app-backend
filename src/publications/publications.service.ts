@@ -22,28 +22,37 @@ export class PublicationsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findAll(): Promise<Publication[]> {
-    return this.publicationsRepository.find({
-      relations: {
-        user: true,
-        medias: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      select: {
-        id: true,
-        createdAt: true,
-        content: true,
-        user: {
-          username: true,
+  async findAll(username: string): Promise<Publication[]> {
+    try {
+      return this.publicationsRepository.find({
+        relations: {
+          user: true,
+          medias: true,
         },
-        medias: {
-          url: true,
-          alt: true,
+        where: {
+          user: {
+            username: username,
+          },
         },
-      },
-    });
+        order: {
+          createdAt: 'DESC',
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          content: true,
+          user: {
+            username: true,
+          },
+          medias: {
+            url: true,
+            alt: true,
+          },
+        },
+      });
+    } catch {
+      throw new NotFoundException();
+    }
   }
 
   async findOne(id: number): Promise<Publication> {
