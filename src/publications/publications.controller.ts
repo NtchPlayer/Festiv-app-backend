@@ -25,7 +25,6 @@ export class PublicationsController {
 
   @Get('/')
   getAll(@Query('username') username?: string) {
-    console.log(username);
     return this.publicationsService.findAll(username);
   }
 
