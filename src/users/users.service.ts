@@ -20,12 +20,18 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const isEmailExist = await this.findByEmail(createUserDto.email);
     if (isEmailExist) {
-      throw new UnprocessableEntityException('Email already in use');
+      throw new UnprocessableEntityException('Email is use');
+    }
+
+    const isNameExist = await this.findByName(createUserDto.name);
+    if (isNameExist) {
+      throw new UnprocessableEntityException('Name is use');
     }
 
     const user = new User();
     user.username = createUserDto.username;
     user.email = createUserDto.email;
+    user.name = createUserDto.name;
     user.password = createUserDto.password;
     user.isProfessional = createUserDto.isProfessional;
 
@@ -33,10 +39,8 @@ export class UsersService {
       user.tags = [];
       for (const tag of createUserDto.tags) {
         const tagEntity = new Tag();
-        tagEntity.content = tag;
-        tagEntity.user = user;
+        tagEntity.content = tag.content;
         user.tags.push(tagEntity);
-        console.log(tagEntity);
       }
     }
     const userSave = await this.usersRepository.save(user);
@@ -63,37 +67,70 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return await this.usersRepository.findOneBy({ email });
+    return this.usersRepository.findOneBy({ email });
   }
 
-  async findByUsername(username: string) {
-    try {
-      return await this.usersRepository.findOneOrFail({
-        where: {
-          username,
+  async findByName(name: string) {
+    return this.usersRepository.findOne({
+      relations: {
+        tags: true,
+        avatar: true,
+      },
+      where: {
+        name,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        biography: true,
+        birthday: true,
+        isProfessional: true,
+        avatar: {
+          url: true,
+          alt: true,
         },
-        select: {
-          username: true,
-          createdAt: true,
-          biography: true,
-          birthday: true,
-          avatar: {
-            url: true,
-            alt: true,
-          },
+        tags: {
+          id: true,
+          content: true,
         },
-      });
-    } catch {
-      throw new NotFoundException("This user don't exist.");
-    }
+      },
+    });
   }
 
   async updateUser(userId: number, data: UpdateUserDto) {
-    const user = await this.usersRepository.findOneBy({ id: userId });
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: { tags: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        birthday: true,
+        biography: true,
+        tags: {
+          id: true,
+          content: true,
+        },
+      },
+    });
 
     user.username = data.username;
     user.email = data.email;
     user.birthday = data.birthday;
+    user.biography = data.biography;
+    if (data.tags) {
+      const newTag = [];
+      for (const tag of data.tags) {
+        const tagEntity = new Tag();
+        tagEntity.content = tag.content;
+        tagEntity.id = tag.id;
+        newTag.push(tagEntity);
+      }
+      user.tags = newTag;
+    }
 
     return await this.usersRepository.save(user);
   }
