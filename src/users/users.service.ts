@@ -70,6 +70,26 @@ export class UsersService {
     return this.usersRepository.findOneBy({ email });
   }
 
+  async findFestivals() {
+    return this.usersRepository.find({
+      relations: {
+        tags: true,
+      },
+      where: {
+        isProfessional: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        tags: {
+          id: true,
+          content: true,
+        },
+      },
+    });
+  }
+
   async findByName(name: string) {
     return this.usersRepository.findOne({
       relations: {
