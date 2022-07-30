@@ -17,6 +17,10 @@ export class TagsService {
     private readonly usersService: UsersService,
   ) {}
 
+  async findOneByContent(content: string) {
+    return this.tagsRepository.findOneBy({ content });
+  }
+
   async add(createTagDto: CreateTagDto, userId: number) {
     const tag = new Tag();
 
