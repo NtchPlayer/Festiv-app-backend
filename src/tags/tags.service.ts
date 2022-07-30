@@ -4,22 +4,24 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Tag } from './tag.entity';
-import { CreateTagDto, UpdateTagDto } from './dto';
+import { CreateTagDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TagsService {
   constructor(
     @InjectRepository(Tag)
     private tagsRepository: Repository<Tag>,
+    private readonly usersService: UsersService,
   ) {}
 
-  async create(createTagDto: CreateTagDto) {
+  async add(createTagDto: CreateTagDto, userId: number) {
     const tag = new Tag();
 
     tag.content = createTagDto.content;
-    tag.user = createTagDto.user;
+    tag.user = await this.usersService.findById(userId);
     try {
       return await this.tagsRepository.save(tag);
     } catch {
@@ -27,13 +29,24 @@ export class TagsService {
     }
   }
 
-  async update(updateTagDto: UpdateTagDto, id: number) {
+  async deleteOne(id: number, userId: number) {
     try {
-      const tag = await this.tagsRepository.findOneBy({ id });
-
-      tag.content = updateTagDto.content;
-      // publication.media = updatePublicationDto.media;
-      return this.tagsRepository.save(tag);
+      const tag = await this.tagsRepository.findOne({
+        where: { id },
+        relations: { user: true },
+        select: {
+          user: {
+            id: true,
+          },
+        },
+      });
+      if (tag.user.id == userId) {
+        return this.tagsRepository.delete(id);
+      } else {
+        throw new UnprocessableEntityException(
+          "Vous n'êtes pas autorisé supprimer ce tag",
+        );
+      }
     } catch (err) {
       throw new NotFoundException("This tag don't exist.");
     }
