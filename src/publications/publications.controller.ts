@@ -24,8 +24,8 @@ export class PublicationsController {
   constructor(private readonly publicationsService: PublicationsService) {}
 
   @Get('/')
-  getAll(@Query('username') username?: string) {
-    return this.publicationsService.findAll(username);
+  getAll(@Query('name') name?: string) {
+    return this.publicationsService.findAll(name);
   }
 
   @Get('/:id')
