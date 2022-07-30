@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { AuthLoginDto } from './dto';
 import { User } from '../users/user.entity';
@@ -14,14 +14,16 @@ export class AuthService {
   async login(authLoginDto: AuthLoginDto) {
     const user = await this.usersService.findByEmail(authLoginDto.email);
     if (!user) {
-      throw new UnauthorizedException("This user don't exist.");
+      throw new NotFoundException(
+        "Aucun utilisateur n'est associé à cette adresse mail.",
+      );
     }
     const valid = user
       ? await this.usersService.validateCredentials(user, authLoginDto.password)
       : false;
 
     if (!valid) {
-      throw new UnauthorizedException('The login is invalid');
+      throw new UnauthorizedException('Mot de passe incorrect.');
     }
 
     const accessToken = await this.tokenService.generateAccessToken(user);
