@@ -4,16 +4,21 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Publication } from './publication.entity';
-import { Media } from '../medias/media.entity';
-import { FilesService } from '../medias/files.service';
-import { User } from '../users/user.entity';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UsersService } from '../users/users.service';
 import { Express } from 'express';
 import { v4 as uuid } from 'uuid';
+
+// Entity
+import { Publication } from './publication.entity';
+import { Media } from '../medias/media.entity';
+import { User } from '../users/user.entity';
+
+// Service
+import { FilesService } from '../medias/files.service';
+import { UsersService } from '../users/users.service';
+import { TagsService } from '../tags/tags.service';
 
 @Injectable()
 export class PublicationsService {
@@ -22,6 +27,7 @@ export class PublicationsService {
     private publicationsRepository: Repository<Publication>,
     private readonly filesService: FilesService,
     private readonly usersService: UsersService,
+    private readonly tagsService: TagsService,
   ) {}
 
   async findAll(name: string): Promise<Publication[]> {
@@ -116,10 +122,21 @@ export class PublicationsService {
         console.log(mediaEntity);
       }
     }
+    if (createPublicationDto.tags) {
+      publication.tags = [];
+      for (const tag of createPublicationDto.tags) {
+        console.log(tag);
+        const tagFound = await this.tagsService.findOneByContent(tag);
+        console.log(tagFound);
+        if (tagFound) {
+          publication.tags.push(tagFound);
+        }
+      }
+    }
     try {
       return await this.publicationsRepository.save(publication);
-    } catch {
-      throw new UnprocessableEntityException('An error has occurred');
+    } catch (e) {
+      throw e;
     }
   }
 
