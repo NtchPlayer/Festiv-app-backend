@@ -5,8 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Publication } from '../publications/publication.entity';
 
 @Entity('tags')
 export class Tag {
@@ -38,4 +41,9 @@ export class Tag {
     orphanedRowAction: 'delete',
   })
   user: User;
+
+  @ManyToMany(() => Publication, (publication) => publication.tags, {
+    orphanedRowAction: 'delete',
+  })
+  publications: Publication[];
 }
