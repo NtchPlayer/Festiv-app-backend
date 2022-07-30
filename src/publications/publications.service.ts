@@ -24,7 +24,7 @@ export class PublicationsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findAll(username: string): Promise<Publication[]> {
+  async findAll(name: string): Promise<Publication[]> {
     try {
       return this.publicationsRepository.find({
         relations: {
@@ -33,7 +33,7 @@ export class PublicationsService {
         },
         where: {
           user: {
-            username: username,
+            name: name,
           },
         },
         order: {
@@ -44,7 +44,9 @@ export class PublicationsService {
           createdAt: true,
           content: true,
           user: {
+            name: true,
             username: true,
+            id: true,
           },
           medias: {
             url: true,
@@ -72,6 +74,7 @@ export class PublicationsService {
           createdAt: true,
           content: true,
           user: {
+            name: true,
             username: true,
           },
           medias: {
