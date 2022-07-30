@@ -5,6 +5,9 @@ import {
   IsNotEmpty,
   IsOptional,
   MinLength,
+  Matches,
+  IsString,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -14,13 +17,23 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @MinLength(2)
+  @MaxLength(36)
+  @Matches(/^\w+$/g)
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(36)
+  @IsString()
   username: string;
 
   @IsNotEmpty()
   @MinLength(8)
-  // @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-  //   message: 'Password is too week!',
-  // })
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'Password is too week!',
+  })
+  @IsString()
   password: string;
 
   @IsOptional()
@@ -29,5 +42,5 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsArray()
-  tags: [string];
+  tags: [{ content: string }];
 }
