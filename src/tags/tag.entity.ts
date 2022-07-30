@@ -35,6 +35,7 @@ export class Tag {
 
   @ManyToOne(() => User, (user) => user.tags, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   user: User;
 }
