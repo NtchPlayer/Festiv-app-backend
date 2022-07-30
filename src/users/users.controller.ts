@@ -4,15 +4,13 @@ import {
   Post,
   Body,
   Param,
-  ParseIntPipe,
-  UseGuards,
+  Put,
   Request,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { TokenService } from '../token/token.service';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Public } from '../decorators/public.decorator';
 
 @Controller('users')
@@ -41,13 +39,12 @@ export class UsersController {
     return payload;
   }
 
-  @Get(':username')
-  show(@Param('username') username: string) {
-    return this.usersService.findByUsername(username);
+  @Get(':name')
+  show(@Param('name') name: string) {
+    return this.usersService.findByName(name);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('/update')
+  @Put('/update')
   async updateUser(@Request() req, @Body() data: UpdateUserDto) {
     return this.usersService.updateUser(req.user.userId, data);
   }
