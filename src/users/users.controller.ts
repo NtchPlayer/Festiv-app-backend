@@ -39,6 +39,11 @@ export class UsersController {
     return payload;
   }
 
+  @Get('festivals')
+  async getFestivals() {
+    return this.usersService.findFestivals();
+  }
+
   @Get(':name')
   show(@Param('name') name: string) {
     return this.usersService.findByName(name);
