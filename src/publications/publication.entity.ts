@@ -6,9 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Media } from '../medias/media.entity';
+import { Tag } from '../tags/tag.entity';
 
 @Entity('publications')
 export class Publication {
@@ -47,4 +50,10 @@ export class Publication {
     cascade: true,
   })
   medias: Media[];
+
+  @ManyToMany(() => Tag, (tag) => tag.publications, {
+    cascade: true,
+  })
+  @JoinTable()
+  tags: Tag[];
 }
