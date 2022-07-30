@@ -52,7 +52,7 @@ export class TokenService {
     };
 
     return this.jwtService.signAsync(
-      { username: user.username, email: user.email },
+      { name: user.name, email: user.email },
       opts,
     );
   }
@@ -156,7 +156,7 @@ export class TokenService {
     return {
       id: user.id,
       email: user.email,
-      username: user.username,
+      name: user.name,
       accessToken,
       ...(refreshToken ? { refresh_token: refreshToken } : {}),
     };
