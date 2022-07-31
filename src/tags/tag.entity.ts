@@ -48,7 +48,6 @@ export class Tag {
   })
   publications: Publication[];
 
-  @BeforeInsert()
   @BeforeRecover()
   transformContentToLowerCase() {
     this.content = this.content.toLowerCase();
