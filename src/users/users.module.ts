@@ -7,6 +7,7 @@ import { TokenService } from '../token/token.service';
 import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
+import { TagsModule } from '../tags/tags.module';
 // import { RefreshToken } from '../token/refresh-token.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -24,6 +25,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
+    TagsModule,
   ],
   providers: [UsersService, TokenService],
   controllers: [UsersController],
