@@ -16,7 +16,7 @@ export class TagsService {
   ) {}
 
   async findOneByContent(content: string) {
-    return this.tagsRepository.findOne({
+    const tag = await this.tagsRepository.findOne({
       where: {
         content: content.toLowerCase(),
       },
@@ -29,10 +29,16 @@ export class TagsService {
         user: {
           id: true,
           name: true,
-          username: true,
         },
       },
     });
+    if (!tag) {
+      return null;
+    }
+    if (!tag.user) {
+      delete tag.user;
+    }
+    return tag;
   }
 
   // async add(createTagDto: CreateTagDto, userId: number) {
