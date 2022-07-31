@@ -5,7 +5,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Express } from 'express';
 import { v4 as uuid } from 'uuid';
@@ -31,7 +31,16 @@ export class PublicationsService {
     private readonly tagsService: TagsService,
   ) {}
 
-  async findAll(name: string): Promise<Publication[]> {
+  async findAll(
+    name: string,
+    hashtag: string,
+    q: string,
+  ): Promise<Publication[]> {
+    const hashtagToLowerCase = hashtag ? hashtag.toLowerCase() : undefined;
+    const contentSearch = q ? Like(`%${q}%`) : undefined;
+    console.log(name);
+    console.log(q);
+    console.log(hashtagToLowerCase);
     try {
       return this.publicationsRepository.find({
         relations: {
@@ -42,10 +51,12 @@ export class PublicationsService {
           },
         },
         where: {
+          content: contentSearch,
           tags: {
             user: {
               name,
             },
+            content: hashtagToLowerCase,
           },
         },
         order: {
