@@ -51,6 +51,6 @@ export class UsersController {
 
   @Put('/update')
   async updateUser(@Request() req, @Body() data: UpdateUserDto) {
-    return this.usersService.updateUser(req.user.userId, data);
+    return this.usersService.updateUser(parseInt(req.user.userId), data);
   }
 }
