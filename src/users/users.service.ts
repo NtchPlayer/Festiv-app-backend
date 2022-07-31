@@ -1,6 +1,5 @@
 import {
   Injectable,
-  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { User } from './user.entity';
@@ -9,12 +8,14 @@ import { CreateUserDto, UpdateUserDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare } from 'bcrypt';
+import { TagsService } from '../tags/tags.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly tagsService: TagsService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -144,14 +145,27 @@ export class UsersService {
     if (data.tags) {
       const newTag = [];
       for (const tag of data.tags) {
-        const tagEntity = new Tag();
-        tagEntity.content = tag.content;
-        tagEntity.id = tag.id;
-        newTag.push(tagEntity);
+        const searchTag = await this.tagsService.findOneByContent(tag.content);
+        if (searchTag && searchTag.user.id !== userId) {
+          throw new UnprocessableEntityException(
+            `Le hashtag ${tag.content} est déjà utilisé par le compte ${searchTag.user.name}.`,
+          );
+        } else if (searchTag) {
+          newTag.push(searchTag);
+        } else {
+          const tagEntity = new Tag();
+          tagEntity.content = tag.content;
+          tagEntity.id = tag.id;
+          newTag.push(tagEntity);
+        }
       }
       user.tags = newTag;
     }
-
-    return await this.usersRepository.save(user);
+    try {
+      return await this.usersRepository.save(user);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
   }
 }
