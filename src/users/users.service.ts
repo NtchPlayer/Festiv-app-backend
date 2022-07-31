@@ -146,7 +146,7 @@ export class UsersService {
       const newTag = [];
       for (const tag of data.tags) {
         const searchTag = await this.tagsService.findOneByContent(tag.content);
-        if (searchTag && searchTag.user.id !== userId) {
+        if (searchTag?.user && searchTag.user.id !== userId) {
           throw new UnprocessableEntityException(
             `Le hashtag ${tag.content} est déjà utilisé par le compte ${searchTag.user.name}.`,
           );
