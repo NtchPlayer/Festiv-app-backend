@@ -28,6 +28,11 @@ export class PublicationsController {
     return this.publicationsService.findAll(name);
   }
 
+  @Get('/user/:name')
+  getByNameAll(@Param('name') name: string) {
+    return this.publicationsService.findByName(name);
+  }
+
   @Get('/:id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     return this.publicationsService.findOne(id);
@@ -43,7 +48,7 @@ export class PublicationsController {
     return this.publicationsService.create(
       createPublicationDto,
       files,
-      req.user,
+      req.user.userId,
     );
   }
 
@@ -57,6 +62,6 @@ export class PublicationsController {
 
   @Delete('/:id')
   async delete(@Param('id', ParseIntPipe) id: number, @Request() req) {
-    return this.publicationsService.deleteOne(id, req.user.userId);
+    return this.publicationsService.deleteOne(id, parseInt(req.user.userId));
   }
 }
