@@ -7,8 +7,8 @@ import {
   BeforeInsert,
   OneToMany,
   OneToOne,
-  JoinColumn,
-} from 'typeorm';
+  JoinColumn, ManyToMany, JoinTable
+} from "typeorm";
 import { hash } from 'bcrypt';
 // import { RefreshToken } from '../token/refresh-token.entity';
 import { Publication } from '../publications/publication.entity';
@@ -71,6 +71,9 @@ export class User {
     cascade: true,
   })
   tags: Tag[];
+
+  @ManyToMany(() => Publication, (publication) => publication.userLikes)
+  userLikes: Publication[];
 
   @BeforeInsert()
   async hashPassword() {

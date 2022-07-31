@@ -56,4 +56,10 @@ export class Publication {
   })
   @JoinTable()
   tags: Tag[];
+
+  @ManyToMany(() => User, (user) => user.userLikes, {
+    cascade: true,
+  })
+  @JoinTable()
+  userLikes: User[];
 }
