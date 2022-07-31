@@ -6,7 +6,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   ManyToMany,
-  JoinTable,
+  BeforeInsert,
+  BeforeRecover,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Publication } from '../publications/publication.entity';
@@ -38,12 +39,18 @@ export class Tag {
 
   @ManyToOne(() => User, (user) => user.tags, {
     onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
   })
   user: User;
 
   @ManyToMany(() => Publication, (publication) => publication.tags, {
     orphanedRowAction: 'delete',
+    onUpdate: 'CASCADE',
   })
   publications: Publication[];
+
+  @BeforeInsert()
+  @BeforeRecover()
+  transformContentToLowerCase() {
+    this.content = this.content.toLowerCase();
+  }
 }
