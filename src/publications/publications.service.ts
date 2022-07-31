@@ -14,6 +14,7 @@ import { v4 as uuid } from 'uuid';
 import { Publication } from './publication.entity';
 import { Media } from '../medias/media.entity';
 import { User } from '../users/user.entity';
+import { Tag } from '../tags/tag.entity';
 
 // Service
 import { FilesService } from '../medias/files.service';
@@ -31,6 +32,52 @@ export class PublicationsService {
   ) {}
 
   async findAll(name: string): Promise<Publication[]> {
+    try {
+      return this.publicationsRepository.find({
+        relations: {
+          user: true,
+          medias: true,
+          tags: {
+            user: true,
+          },
+        },
+        where: {
+          tags: {
+            user: {
+              name,
+            },
+          },
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          content: true,
+          user: {
+            name: true,
+            username: true,
+            id: true,
+          },
+          medias: {
+            url: true,
+            alt: true,
+          },
+          tags: {
+            content: true,
+            user: {
+              name: true,
+            },
+          },
+        },
+      });
+    } catch {
+      throw new NotFoundException();
+    }
+  }
+
+  async findByName(name: string): Promise<Publication[]> {
     try {
       return this.publicationsRepository.find({
         relations: {
@@ -97,10 +144,10 @@ export class PublicationsService {
   async create(
     createPublicationDto: CreatePublicationDto,
     files: Express.Multer.File[],
-    user: User,
+    userId: number,
   ) {
     const publication = new Publication();
-    const userInfos = await this.usersService.findById(user.id);
+    const userInfos = await this.usersService.findById(userId);
 
     publication.content = createPublicationDto.content;
     publication.user = userInfos;
@@ -125,11 +172,13 @@ export class PublicationsService {
     if (createPublicationDto.tags) {
       publication.tags = [];
       for (const tag of createPublicationDto.tags) {
-        console.log(tag);
         const tagFound = await this.tagsService.findOneByContent(tag);
-        console.log(tagFound);
         if (tagFound) {
           publication.tags.push(tagFound);
+        } else {
+          const tagEntity = new Tag();
+          tagEntity.content = tag;
+          publication.tags.push(tagEntity);
         }
       }
     }
@@ -152,35 +201,16 @@ export class PublicationsService {
     }
   }
 
-  async deleteOne(id: number, userId: string) {
+  async deleteOne(id: number, userId: number) {
     try {
-      const publication = await this.publicationsRepository.findOneOrFail({
-        where: {
-          id,
-        },
-        relations: {
-          user: true,
-          medias: true,
-        },
-        select: {
-          user: {
-            id: true,
-          },
-          medias: {
-            key: true,
-          },
-        },
-      });
-      if (publication.user.id === parseInt(userId)) {
-        for (const file of publication.medias) {
-          await this.filesService.deleteFile(file.key);
-        }
-        return this.publicationsRepository.delete(id);
-      } else {
-        throw new UnauthorizedException();
-      }
+      return this.publicationsRepository
+        .createQueryBuilder()
+        .delete()
+        .where('id = :id', { id })
+        .andWhere('userId = :userId', { userId })
+        .execute();
     } catch {
-      throw new NotFoundException("This publication don't exist.");
+      throw new UnprocessableEntityException("Can't delete publication");
     }
   }
 }
