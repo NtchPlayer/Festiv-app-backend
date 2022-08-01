@@ -106,7 +106,7 @@ export class PublicationsService {
       result.isLike = result.isLike != 1;
     }
 
-    return results.length > 1 ? results : results[0];
+    return results;
   }
 
   private formattedElement(
@@ -141,7 +141,8 @@ export class PublicationsService {
   }
 
   async findOne(id: number, userId: number): Promise<Publication> {
-    return await this.performQuery(userId, `publications.id = '${id}'`);
+    const result = await this.performQuery(userId, `publications.id = '${id}'`);
+    return result[0];
   }
 
   async create(
