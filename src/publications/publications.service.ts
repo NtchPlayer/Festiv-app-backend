@@ -98,7 +98,7 @@ export class PublicationsService {
       result.medias = result.medias
         ? this.formattedElement(result.medias, ['url', 'alt'])
         : null;
-      result.users = this.formattedElement(result.users, [
+      result.user = this.formattedElement(result.user, [
         'id',
         'name',
         'username',
