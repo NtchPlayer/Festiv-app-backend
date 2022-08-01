@@ -1,11 +1,10 @@
 import {
   Injectable,
   NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Express } from 'express';
 import { v4 as uuid } from 'uuid';
@@ -13,7 +12,6 @@ import { v4 as uuid } from 'uuid';
 // Entity
 import { Publication } from './publication.entity';
 import { Media } from '../medias/media.entity';
-import { User } from '../users/user.entity';
 import { Tag } from '../tags/tag.entity';
 
 // Service
@@ -31,125 +29,115 @@ export class PublicationsService {
     private readonly tagsService: TagsService,
   ) {}
 
+  private constructorQuerySearch(
+    userId: number,
+    name?: string,
+    hashtag?: string,
+    q?: string,
+  ) {
+    let searchQuery = '[nameSearch] [contentSearch] [hashtagSearch]';
+
+    const separatorNameContent = name && q ? 'AND' : '';
+    const separatorNameHashtag = name && !q && hashtag ? 'AND' : '';
+    const separatorContentHashtag = q && hashtag ? 'AND' : '';
+
+    const nameSearch = name
+      ? `userTag.name = '${name}' ${separatorNameHashtag}`
+      : '';
+    const contentSearch = q
+      ? `${separatorNameContent} publications.content LIKE '%${q}%'`
+      : '';
+    const hashtagSearch = hashtag
+      ? `${separatorContentHashtag} tags.content = '${hashtag.toLowerCase()}'`
+      : '';
+
+    searchQuery = searchQuery
+      .replace('[nameSearch]', nameSearch)
+      .replace('[contentSearch]', contentSearch)
+      .replace('[hashtagSearch]', hashtagSearch);
+
+    if (!name && !hashtag && !q) {
+      searchQuery = '1=1';
+    }
+    return this.performQuery(userId, searchQuery);
+  }
+
+  private async performQuery(userId: number, searchQuery: string) {
+    let query = `
+      SELECT
+        publications.id,
+        publications.createdAt,
+        publications.content,
+        GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS users,
+        GROUP_CONCAT(DISTINCT CONCAT(medias.url,',',medias.alt) SEPARATOR ';') AS medias,
+        GROUP_CONCAT(DISTINCT CONCAT(tags.content,',',COALESCE(userTag.name, 'NULL')) SEPARATOR ';') AS tags,
+        ISNULL(publications_user_likes_users.usersId) AS isLike
+      FROM publications
+      LEFT OUTER JOIN publications_user_likes_users ON publications_user_likes_users.publicationsId = publications.id AND publications_user_likes_users.usersId = ?
+      LEFT JOIN publications_tags_tags ON publications_tags_tags.publicationsId = publications.id
+      LEFT JOIN tags ON tags.id = publications_tags_tags.tagsId
+      LEFT JOIN users AS userTag ON userTag.id = tags.userId
+      INNER JOIN users AS userPublication ON userPublication.id = publications.userId
+      LEFT JOIN medias ON medias.publicationId = publications.id
+      WHERE [searchQuery]
+      GROUP BY publications.id
+      ORDER BY publications.createdAt DESC
+    `;
+    query = query.replace('[searchQuery]', searchQuery);
+
+    const results = await this.publicationsRepository.query(query, [userId]);
+
+    if (results.length === 0) {
+      throw new NotFoundException();
+    }
+
+    for (const result of results) {
+      result.tags = result.tags
+        ? this.formattedElement(result.tags, ['content', 'name'])
+        : null;
+      result.medias = result.medias
+        ? this.formattedElement(result.medias, ['url', 'alt'])
+        : null;
+      result.users = this.formattedElement(result.users, [
+        'id',
+        'name',
+        'username',
+      ]);
+      result.isLike = result.isLike != 1;
+    }
+
+    return results;
+  }
+
+  private formattedElement(content: string, properties: string[]) {
+    const objects = content.split(';');
+    const array = [];
+    for (const object of objects) {
+      const value = object.split(',');
+      const objectFill = {};
+      properties.forEach((property, i) => {
+        objectFill[property] = value[i];
+      });
+      array.push(objectFill);
+    }
+    return array;
+  }
+
   async findAll(
     name: string,
     hashtag: string,
     q: string,
+    userId: number,
   ): Promise<Publication[]> {
-    const hashtagToLowerCase = hashtag ? hashtag.toLowerCase() : undefined;
-    const contentSearch = q ? Like(`%${q}%`) : undefined;
-    console.log(name);
-    console.log(q);
-    console.log(hashtagToLowerCase);
-    try {
-      return this.publicationsRepository.find({
-        relations: {
-          user: true,
-          medias: true,
-          tags: {
-            user: true,
-          },
-        },
-        where: {
-          content: contentSearch,
-          tags: {
-            user: {
-              name,
-            },
-            content: hashtagToLowerCase,
-          },
-        },
-        order: {
-          createdAt: 'DESC',
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          content: true,
-          user: {
-            name: true,
-            username: true,
-            id: true,
-          },
-          medias: {
-            url: true,
-            alt: true,
-          },
-          tags: {
-            content: true,
-            user: {
-              name: true,
-            },
-          },
-        },
-      });
-    } catch {
-      throw new NotFoundException();
-    }
+    return this.constructorQuerySearch(userId, name, hashtag, q);
   }
 
-  async findByName(name: string): Promise<Publication[]> {
-    try {
-      return this.publicationsRepository.find({
-        relations: {
-          user: true,
-          medias: true,
-        },
-        where: {
-          user: {
-            name: name,
-          },
-        },
-        order: {
-          createdAt: 'DESC',
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          content: true,
-          user: {
-            name: true,
-            username: true,
-            id: true,
-          },
-          medias: {
-            url: true,
-            alt: true,
-          },
-        },
-      });
-    } catch {
-      throw new NotFoundException();
-    }
+  async findByName(name: string, userId: number): Promise<Publication[]> {
+    return await this.performQuery(userId, `userPublication.name = '${name}'`);
   }
 
-  async findOne(id: number): Promise<Publication> {
-    try {
-      return await this.publicationsRepository.findOneOrFail({
-        where: {
-          id,
-        },
-        relations: {
-          user: true,
-          medias: true,
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          content: true,
-          user: {
-            name: true,
-            username: true,
-          },
-          medias: {
-            url: true,
-            alt: true,
-          },
-        },
-      });
-    } catch (err) {
-      throw new NotFoundException();
-    }
+  async findOne(id: number, userId: number): Promise<Publication> {
+    return await this.performQuery(userId, `publications.id = '${id}'`);
   }
 
   async create(
@@ -177,7 +165,6 @@ export class PublicationsService {
         mediaEntity.key = upload.Key;
         mediaEntity.type = file.mimetype;
         publication.medias.push(mediaEntity);
-        console.log(mediaEntity);
       }
     }
     if (createPublicationDto.tags) {
@@ -197,6 +184,57 @@ export class PublicationsService {
       return await this.publicationsRepository.save(publication);
     } catch (e) {
       throw e;
+    }
+  }
+
+  async likePublication(publicationId: number, userId: number) {
+    try {
+      const publication = await this.publicationsRepository.findOne({
+        where: {
+          id: publicationId,
+        },
+        relations: {
+          userLikes: true,
+        },
+        select: {
+          id: true,
+          content: true,
+          userLikes: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        },
+      });
+      const user = await this.usersService.findById(userId);
+      if (!publication.userLikes) {
+        publication.userLikes = [];
+      }
+      publication.userLikes.push(user);
+      await this.publicationsRepository.save(publication);
+      return 'success';
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async unlikePublication(publicationId: number, userId: number) {
+    try {
+      const publication = await this.publicationsRepository.findOne({
+        where: {
+          id: publicationId,
+        },
+        relations: {
+          userLikes: true,
+        },
+      });
+      publication.userLikes = publication.userLikes.filter((user) => {
+        return user.id !== userId;
+      });
+      await this.publicationsRepository.save(publication);
+      return 'success';
+    } catch {
+      throw new NotFoundException('Impossible de trouver la publication.');
     }
   }
 

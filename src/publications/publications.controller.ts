@@ -15,7 +15,6 @@ import {
 
 import { PublicationsService } from './publications.service';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
-import { Publication } from './publication.entity';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 
@@ -25,21 +24,27 @@ export class PublicationsController {
 
   @Get('/')
   getAll(
+    @Request() req,
     @Query('name') name?: string,
     @Query('hashtag') hashtag?: string,
     @Query('q') q?: string,
   ) {
-    return this.publicationsService.findAll(name, hashtag, q);
+    return this.publicationsService.findAll(
+      name,
+      hashtag,
+      q,
+      parseInt(req.user.userId),
+    );
   }
 
   @Get('/user/:name')
-  getByNameAll(@Param('name') name: string) {
-    return this.publicationsService.findByName(name);
+  getByNameAll(@Param('name') name: string, @Request() req) {
+    return this.publicationsService.findByName(name, parseInt(req.user.userId));
   }
 
   @Get('/:id')
-  getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.publicationsService.findOne(id);
+  getOne(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.publicationsService.findOne(id, parseInt(req.user.userId));
   }
 
   @Post('/add')
@@ -53,6 +58,22 @@ export class PublicationsController {
       createPublicationDto,
       files,
       req.user.userId,
+    );
+  }
+
+  @Post('/like/:id')
+  addLike(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.publicationsService.likePublication(
+      id,
+      parseInt(req.user.userId),
+    );
+  }
+
+  @Delete('/like/:id')
+  unLike(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.publicationsService.unlikePublication(
+      id,
+      parseInt(req.user.userId),
     );
   }
 
