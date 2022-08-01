@@ -68,7 +68,7 @@ export class PublicationsService {
         publications.id,
         publications.createdAt,
         publications.content,
-        GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS users,
+        GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS user,
         GROUP_CONCAT(DISTINCT CONCAT(medias.url,',',medias.alt) SEPARATOR ';') AS medias,
         GROUP_CONCAT(DISTINCT CONCAT(tags.content,',',COALESCE(userTag.name, 'NULL')) SEPARATOR ';') AS tags,
         ISNULL(publications_user_likes_users.usersId) AS isLike
