@@ -93,23 +93,27 @@ export class PublicationsService {
 
     for (const result of results) {
       result.tags = result.tags
-        ? this.formattedElement(result.tags, ['content', 'name'])
+        ? this.formattedElement(result.tags, ['content', 'name'], true)
         : null;
       result.medias = result.medias
-        ? this.formattedElement(result.medias, ['url', 'alt'])
+        ? this.formattedElement(result.medias, ['url', 'alt'], true)
         : null;
-      result.user = this.formattedElement(result.user, [
-        'id',
-        'name',
-        'username',
-      ]);
+      result.user = this.formattedElement(
+        result.user,
+        ['id', 'name', 'username'],
+        false,
+      );
       result.isLike = result.isLike != 1;
     }
 
-    return results;
+    return results.length > 1 ? results : results[0];
   }
 
-  private formattedElement(content: string, properties: string[]) {
+  private formattedElement(
+    content: string,
+    properties: string[],
+    isArray: boolean,
+  ) {
     const objects = content.split(';');
     const array = [];
     for (const object of objects) {
@@ -120,7 +124,7 @@ export class PublicationsService {
       });
       array.push(objectFill);
     }
-    return array;
+    return isArray ? array : array[0];
   }
 
   async findAll(
