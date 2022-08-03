@@ -62,4 +62,18 @@ export class Publication {
   })
   @JoinTable()
   userLikes: User[];
+
+  @ManyToOne(() => Publication, (publication) => publication.comments, {
+    onDelete: 'CASCADE',
+  })
+  parentPublication: Publication;
+
+  @OneToMany(
+    () => Publication,
+    (publication) => publication.parentPublication,
+    {
+      cascade: true,
+    },
+  )
+  comments: Publication[];
 }
