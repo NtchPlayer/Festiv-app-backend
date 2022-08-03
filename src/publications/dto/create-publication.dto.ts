@@ -1,4 +1,9 @@
-import { IsArray, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+} from 'class-validator';
 
 export class CreatePublicationDto {
   @IsNotEmpty()
@@ -7,4 +12,8 @@ export class CreatePublicationDto {
   @IsOptional()
   @IsArray()
   tags: [];
+
+  @IsOptional()
+  @IsNumberString()
+  parentId: string;
 }

@@ -62,28 +62,52 @@ export class PublicationsService {
     return this.performQuery(userId, searchQuery);
   }
 
-  private async performQuery(userId: number, searchQuery: string) {
+  private async performQuery(
+    userId: number,
+    searchQuery: string,
+    getComment = false,
+    loadComment = false,
+  ) {
     let query = `
       SELECT
         publications.id,
         publications.createdAt,
         publications.content,
+        publications.parentPublicationId,
         GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS user,
         GROUP_CONCAT(DISTINCT CONCAT(medias.url,',',medias.alt) SEPARATOR ';') AS medias,
         GROUP_CONCAT(DISTINCT CONCAT(tags.content,',',COALESCE(userTag.name, 'NULL')) SEPARATOR ';') AS tags,
-        ISNULL(publications_user_likes_users.usersId) AS isLike
+        [commentsQuery]
+        COUNT(DISTINCT childPublication.id) AS countComments,
+        ISNULL(publications_user_likes_users.usersId) AS isLike,
+        COUNT(DISTINCT like_count.usersId) AS countLike
       FROM publications
+      # get IsLike
       LEFT OUTER JOIN publications_user_likes_users ON publications_user_likes_users.publicationsId = publications.id AND publications_user_likes_users.usersId = ?
+      LEFT JOIN publications_user_likes_users AS like_count ON like_count.publicationsId = publications.id
       LEFT JOIN publications_tags_tags ON publications_tags_tags.publicationsId = publications.id
       LEFT JOIN tags ON tags.id = publications_tags_tags.tagsId
       LEFT JOIN users AS userTag ON userTag.id = tags.userId
       INNER JOIN users AS userPublication ON userPublication.id = publications.userId
+      # medias
       LEFT JOIN medias ON medias.publicationId = publications.id
-      WHERE [searchQuery]
+      # comments
+      LEFT JOIN publications AS childPublication ON childPublication.parentPublicationId = publications.id
+      # LEFT JOIN users AS userPublicationComment ON userPublicationComment.id = childPublication.userId
+      WHERE [searchQuery] [getComment]
       GROUP BY publications.id
       ORDER BY publications.createdAt DESC
     `;
     query = query.replace('[searchQuery]', searchQuery);
+    query = query.replace(
+      '[getComment]',
+      getComment ? '' : 'AND publications.parentPublicationId IS NULL',
+    );
+
+    const commentsQuery = loadComment
+      ? "GROUP_CONCAT(DISTINCT CONCAT(childPublication.id) SEPARATOR ';') AS commentsId,"
+      : '';
+    query = query.replace('[commentsQuery]', commentsQuery);
 
     const results = await this.publicationsRepository.query(query, [userId]);
 
@@ -98,6 +122,14 @@ export class PublicationsService {
       result.medias = result.medias
         ? this.formattedElement(result.medias, ['url', 'alt'], true)
         : null;
+      if (loadComment) {
+        result.commentsId = result.commentsId
+          ? result.commentsId.split(';')
+          : null;
+        result.comments = result.commentsId
+          ? await this.getComments(result.commentsId, userId)
+          : null;
+      }
       result.user = this.formattedElement(
         result.user,
         ['id', 'name', 'username'],
@@ -127,6 +159,15 @@ export class PublicationsService {
     return isArray ? array : array[0];
   }
 
+  private async getComments(commentsId: [string], userId: number) {
+    const comments = [];
+    for (const id of commentsId) {
+      const comment = await this.findOne(parseInt(id), userId);
+      comments.push(comment);
+    }
+    return comments;
+  }
+
   async findAll(
     name: string,
     hashtag: string,
@@ -141,7 +182,12 @@ export class PublicationsService {
   }
 
   async findOne(id: number, userId: number): Promise<Publication> {
-    const result = await this.performQuery(userId, `publications.id = '${id}'`);
+    const result = await this.performQuery(
+      userId,
+      `publications.id = '${id}'`,
+      true,
+      true,
+    );
     return result[0];
   }
 
@@ -185,8 +231,27 @@ export class PublicationsService {
         }
       }
     }
+
+    let parentPublication = null;
+
+    if (createPublicationDto.parentId) {
+      parentPublication = await this.publicationsRepository.findOne({
+        where: { id: parseInt(createPublicationDto.parentId) },
+        relations: {
+          comments: true,
+        },
+      });
+
+      if (!parentPublication.comments) {
+        parentPublication.comments = [];
+      }
+      parentPublication.comments.push(publication);
+    }
+
     try {
-      return await this.publicationsRepository.save(publication);
+      return await this.publicationsRepository.save(
+        createPublicationDto.parentId ? parentPublication : publication,
+      );
     } catch (e) {
       throw e;
     }
