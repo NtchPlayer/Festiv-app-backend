@@ -75,7 +75,7 @@ export class PublicationsService {
         publications.content,
         publications.parentPublicationId,
         GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS user,
-        GROUP_CONCAT(DISTINCT CONCAT(medias.url,',',medias.alt) SEPARATOR ';') AS medias,
+        GROUP_CONCAT(DISTINCT CONCAT(mediaTable.url,',',COALESCE(mediaTable.alt, 'NULL')) SEPARATOR ';') AS medias,
         GROUP_CONCAT(DISTINCT CONCAT(tags.content,',',COALESCE(userTag.name, 'NULL')) SEPARATOR ';') AS tags,
         [commentsQuery]
         COUNT(DISTINCT childPublication.id) AS countComments,
@@ -90,7 +90,7 @@ export class PublicationsService {
       LEFT JOIN users AS userTag ON userTag.id = tags.userId
       INNER JOIN users AS userPublication ON userPublication.id = publications.userId
       # medias
-      LEFT JOIN medias ON medias.publicationId = publications.id
+      LEFT JOIN medias AS mediaTable ON mediaTable.publicationId = publications.id
       # comments
       LEFT JOIN publications AS childPublication ON childPublication.parentPublicationId = publications.id
       # LEFT JOIN users AS userPublicationComment ON userPublicationComment.id = childPublication.userId
@@ -110,6 +110,7 @@ export class PublicationsService {
     query = query.replace('[commentsQuery]', commentsQuery);
 
     const results = await this.publicationsRepository.query(query, [userId]);
+    console.log(results);
 
     if (results.length === 0) {
       throw new NotFoundException();
