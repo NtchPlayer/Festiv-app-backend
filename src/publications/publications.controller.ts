@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
@@ -56,12 +55,11 @@ export class PublicationsController {
     @Body() createPublicationDto: CreatePublicationDto,
     @UploadedFiles(ParseFile) files: Express.Multer.File[],
   ) {
-    console.log('test');
-    // return this.publicationsService.create(
-    //   createPublicationDto,
-    //   files,
-    //   req.user.userId,
-    // );
+    return this.publicationsService.create(
+      createPublicationDto,
+      files,
+      req.user.userId,
+    );
   }
 
   @Post('/like/:id')
