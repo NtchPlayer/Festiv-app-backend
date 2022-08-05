@@ -11,12 +11,14 @@ import {
   UseInterceptors,
   UploadedFiles,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { PublicationsService } from './publications.service';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
+import { ParseFile } from '../medias/parse-file.pipe';
 
 @Controller('publications')
 export class PublicationsController {
@@ -48,17 +50,18 @@ export class PublicationsController {
   }
 
   @Post('/add')
-  @UseInterceptors(FilesInterceptor('files[]', 4))
+  @UseInterceptors(FilesInterceptor('files[]'))
   create(
     @Request() req,
     @Body() createPublicationDto: CreatePublicationDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles(ParseFile) files: Express.Multer.File[],
   ) {
-    return this.publicationsService.create(
-      createPublicationDto,
-      files,
-      req.user.userId,
-    );
+    console.log('test');
+    // return this.publicationsService.create(
+    //   createPublicationDto,
+    //   files,
+    //   req.user.userId,
+    // );
   }
 
   @Post('/like/:id')
