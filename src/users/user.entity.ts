@@ -74,7 +74,9 @@ export class User {
   })
   tags: Tag[];
 
-  @ManyToMany(() => Publication, (publication) => publication.userLikes)
+  @ManyToMany(() => Publication, (publication) => publication.userLikes, {
+    onDelete: 'CASCADE',
+  })
   userLikes: Publication[];
 
   @BeforeInsert()
