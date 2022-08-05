@@ -5,6 +5,9 @@ export class ParseFile implements PipeTransform {
   transform(
     files: Express.Multer.File[],
   ): Express.Multer.File | Express.Multer.File[] {
+    if (files.length === 0) {
+      return;
+    }
     if (
       !files.every((file) =>
         file.originalname.match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|m4v|avi)$/),
