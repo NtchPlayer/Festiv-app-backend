@@ -1,15 +1,11 @@
 import {
   Controller,
-  Get,
   Post,
-  Body,
   Param,
   ParseIntPipe,
   Request,
   Delete,
-  Put,
   UseInterceptors,
-  UploadedFiles,
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
@@ -18,7 +14,6 @@ import { MediasService } from './medias.service';
 import { Express } from 'express';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { imageFileFilter } from './file-helpers';
 
 @Controller('medias')
 export class MediasController {
