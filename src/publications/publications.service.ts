@@ -76,7 +76,7 @@ export class PublicationsService {
         publications.parentPublicationId,
         GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS user,
         GROUP_CONCAT(DISTINCT CONCAT(mediasUser.url,',',COALESCE(mediasUser.alt, 'NULL')) SEPARATOR ';') AS userAvatar,
-        GROUP_CONCAT(DISTINCT CONCAT(mediasTable.url,',',COALESCE(mediasTable.alt, 'NULL')) SEPARATOR ';') AS medias,
+        GROUP_CONCAT(DISTINCT CONCAT(mediasTable.url,',',COALESCE(mediasTable.alt, 'NULL'),',',mediasTable.type) SEPARATOR ';') AS medias,
         GROUP_CONCAT(DISTINCT CONCAT(tags.content,',',COALESCE(userTag.name, 'NULL')) SEPARATOR ';') AS tags,
         [commentsQuery]
         COUNT(DISTINCT childPublication.id) AS countComments,
@@ -122,7 +122,7 @@ export class PublicationsService {
         ? this.formattedElement(result.tags, ['content', 'name'], true)
         : null;
       result.medias = result.medias
-        ? this.formattedElement(result.medias, ['url', 'alt'], true)
+        ? this.formattedElement(result.medias, ['url', 'alt', 'type'], true)
         : null;
       if (loadComment) {
         result.commentsId = result.commentsId
