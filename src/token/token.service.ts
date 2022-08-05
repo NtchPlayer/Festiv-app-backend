@@ -157,7 +157,7 @@ export class TokenService {
       id: user.id,
       email: user.email,
       name: user.name,
-      avatar: user.avatar.url,
+      avatar: user.avatar?.url,
       accessToken,
       ...(refreshToken ? { refresh_token: refreshToken } : {}),
     };
