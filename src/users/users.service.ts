@@ -71,7 +71,12 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.usersRepository.findOneBy({ email });
+    return this.usersRepository.findOne({
+      where: { email },
+      relations: {
+        avatar: true,
+      },
+    });
   }
 
   async findFestivals() {
