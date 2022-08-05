@@ -6,6 +6,7 @@ import {
 import { Express } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { v4 as uuid } from 'uuid';
 
 //Service
 import { FilesService } from './files.service';
@@ -13,7 +14,6 @@ import { UsersService } from '../users/users.service';
 
 // Entity
 import { Media } from './media.entity';
-import { User } from '../users/user.entity';
 import { Publication } from '../publications/publication.entity';
 
 @Injectable()
@@ -25,26 +25,36 @@ export class MediasService {
     private readonly usersService: UsersService,
   ) {}
 
-  async addUserAvatar(file: Express.Multer.File, user: User) {
-    const media = new Media();
-    const userInfos = await this.usersService.findById(user.id);
-
+  async addUserAvatar(file: Express.Multer.File, userId: number) {
+    const user = await this.usersService.findById(userId);
+    console.log('user get:', user);
     const upload = await this.filesService.uploadFile(
       file.buffer,
       file.originalname,
-      'avatars',
+      `users/${user.name}`,
       file.mimetype,
     );
 
-    media.url = upload.Location;
-    media.key = upload.Key;
-    media.type = file.mimetype;
-    media.user = userInfos;
-
+    if (user.avatar) {
+      await this.filesService.deleteFile(user.avatar.key);
+      user.avatar.url = upload.Location;
+      user.avatar.key = upload.Key;
+      user.avatar.type = file.mimetype;
+    } else {
+      const media = new Media();
+      media.url = upload.Location;
+      media.key = upload.Key;
+      media.type = file.mimetype;
+      user.avatar = media;
+    }
     try {
-      await this.mediasRepository.save(media);
+      console.log('before save', user);
+      await this.usersService.saveAvatar(user);
+      return user.avatar;
     } catch {
-      throw new UnprocessableEntityException('An error has occurred');
+      throw new UnprocessableEntityException(
+        "L'image de profile n'a pas pu être mise à jour.",
+      );
     }
   }
 
