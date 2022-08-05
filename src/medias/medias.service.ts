@@ -6,7 +6,6 @@ import {
 import { Express } from 'express';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { v4 as uuid } from 'uuid';
 
 //Service
 import { FilesService } from './files.service';
