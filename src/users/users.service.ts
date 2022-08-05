@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { User } from './user.entity';
 import { Tag } from '../tags/tag.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
@@ -64,7 +61,12 @@ export class UsersService {
   }
 
   async findById(id: number): Promise<User> {
-    return this.usersRepository.findOneByOrFail({ id });
+    return this.usersRepository.findOneOrFail({
+      where: { id },
+      relations: {
+        avatar: true,
+      },
+    });
   }
 
   async findByEmail(email: string) {
@@ -167,5 +169,9 @@ export class UsersService {
       console.log(e);
       throw e;
     }
+  }
+
+  async saveAvatar(user) {
+    return this.usersRepository.save(user);
   }
 }
