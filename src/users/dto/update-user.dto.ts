@@ -4,7 +4,6 @@ import {
   IsOptional,
   IsString,
   Matches,
-  // MaxDate,
   MinLength,
 } from 'class-validator';
 
