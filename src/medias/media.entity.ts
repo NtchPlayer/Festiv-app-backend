@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Publication } from '../publications/publication.entity';
 import { User } from '../users/user.entity';
@@ -49,6 +50,9 @@ export class Media {
   })
   publication: Publication;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.avatar, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
   user: User;
 }
