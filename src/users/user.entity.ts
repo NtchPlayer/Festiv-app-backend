@@ -7,8 +7,8 @@ import {
   BeforeInsert,
   OneToMany,
   OneToOne,
-  JoinColumn, ManyToMany, JoinTable
-} from "typeorm";
+  ManyToMany,
+} from 'typeorm';
 import { hash } from 'bcrypt';
 // import { RefreshToken } from '../token/refresh-token.entity';
 import { Publication } from '../publications/publication.entity';
@@ -63,8 +63,10 @@ export class User {
   })
   publications: Publication[];
 
-  @OneToOne(() => Media)
-  @JoinColumn()
+  @OneToOne(() => Media, (media) => media.user, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   avatar: Media;
 
   @OneToMany(() => Tag, (tag) => tag.user, {
