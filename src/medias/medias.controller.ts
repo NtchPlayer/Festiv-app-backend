@@ -35,16 +35,12 @@ export class MediasController {
   // }
 
   @Post('avatar')
-  @UseInterceptors(
-    FileInterceptor('filename', {
-      fileFilter: imageFileFilter,
-    }),
-  )
-  uploadAvatar(@Request() req, @UploadedFile() file: Express.Multer.File) {
+  @UseInterceptors(FileInterceptor('avatar'))
+  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Request() req) {
     if (!file || req.fileValidationError) {
       throw new BadRequestException('Invalid file provided');
     }
-    return this.mediasService.addUserAvatar(file, req.user);
+    return this.mediasService.addUserAvatar(file, parseInt(req.user.userId));
   }
 
   // @Post('publications')
