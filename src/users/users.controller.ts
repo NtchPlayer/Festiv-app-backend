@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Request,
+  Delete,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -52,5 +53,10 @@ export class UsersController {
   @Put('/update')
   async updateUser(@Request() req, @Body() data: UpdateUserDto) {
     return this.usersService.updateUser(parseInt(req.user.userId), data);
+  }
+
+  @Delete()
+  async delete(@Request() req) {
+    return this.usersService.deleteUser(parseInt(req.user.userId));
   }
 }
