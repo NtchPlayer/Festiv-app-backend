@@ -180,4 +180,8 @@ export class UsersService {
   async saveAvatar(user) {
     return this.usersRepository.save(user);
   }
+
+  async deleteUser(id: number) {
+    return this.usersRepository.delete(id);
+  }
 }
