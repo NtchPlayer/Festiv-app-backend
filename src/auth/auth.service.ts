@@ -43,7 +43,6 @@ export class AuthService {
     try {
       const user = await this.usersService.findById(userId);
       delete user.password;
-      // delete user.id;
       delete user.createdAt;
       delete user.updatedAt;
       return user;
