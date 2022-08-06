@@ -1,18 +1,23 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { User } from './user.entity';
+import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare } from 'bcrypt';
 import { TagsService } from '../tags/tags.service';
+import { FilesService } from '../medias/files.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Media)
+    private readonly mediasRepository: Repository<Media>,
     private readonly tagsService: TagsService,
+    private readonly filesService: FilesService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -182,6 +187,43 @@ export class UsersService {
   }
 
   async deleteUser(id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: {
+        avatar: true,
+      },
+      select: {
+        avatar: {
+          key: true,
+        },
+      },
+    });
+    const mediasToDelete = await this.mediasRepository.find({
+      where: {
+        publication: {
+          user: {
+            id,
+          },
+        },
+      },
+      relations: {
+        publication: {
+          user: true,
+        },
+      },
+      select: {
+        key: true,
+        publication: {},
+      },
+    });
+    await this.filesService.deleteFile(user.avatar.key);
+    await this.filesService.deleteFiles(
+      mediasToDelete.map((media) => {
+        return {
+          Key: media.key,
+        };
+      }),
+    );
     return this.usersRepository.delete(id);
   }
 }
