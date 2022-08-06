@@ -52,4 +52,22 @@ export class FilesService {
         throw new InternalServerErrorException();
       });
   }
+
+  public async deleteFiles(key: { Key: string }[]) {
+    return this._s3
+      .deleteObjects({
+        Bucket: process.env.AWS_BUCKET,
+        Delete: {
+          Objects: key,
+        },
+      })
+      .promise()
+      .then((r) => {
+        return r;
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new InternalServerErrorException();
+      });
+  }
 }
