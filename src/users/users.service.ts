@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import { User } from './user.entity';
 import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';
@@ -105,33 +105,38 @@ export class UsersService {
   }
 
   async findByName(name: string) {
-    return this.usersRepository.findOne({
-      relations: {
-        tags: true,
-        avatar: true,
-      },
-      where: {
-        name,
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        biography: true,
-        birthday: true,
-        isProfessional: true,
-        avatar: {
-          url: true,
-          alt: true,
+    try {
+      return await this.usersRepository.findOneOrFail({
+        where: {
+          name,
         },
-        tags: {
+        relations: {
+          tags: true,
+          avatar: true,
+        },
+        select: {
           id: true,
-          content: true,
+          username: true,
+          email: true,
+          name: true,
+          createdAt: true,
+          biography: true,
+          birthday: true,
+          isProfessional: true,
+          avatar: {
+            id: true,
+            url: true,
+            alt: true,
+          },
+          tags: {
+            id: true,
+            content: true,
+          },
         },
-      },
-    });
+      });
+    } catch {
+      throw new NotFoundException("This user don't exist");
+    }
   }
 
   async updateUser(userId: number, data: UpdateUserDto) {
