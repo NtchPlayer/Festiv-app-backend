@@ -13,7 +13,6 @@ import { UsersService } from '../users/users.service';
 
 // Entity
 import { Media } from './media.entity';
-import { Publication } from '../publications/publication.entity';
 
 @Injectable()
 export class MediasService {
@@ -54,31 +53,6 @@ export class MediasService {
       throw new UnprocessableEntityException(
         "L'image de profile n'a pas pu être mise à jour.",
       );
-    }
-  }
-
-  async addPublicationMedia(
-    file: Express.Multer.File,
-    publication: Publication,
-  ) {
-    const media = new Media();
-
-    const upload = await this.filesService.uploadFile(
-      file.buffer,
-      file.originalname,
-      `publications/${publication.folder}`,
-      file.mimetype,
-    );
-
-    media.url = upload.Location;
-    media.key = upload.Key;
-    media.type = file.mimetype;
-    media.publication = publication;
-
-    try {
-      await this.mediasRepository.save(media);
-    } catch {
-      throw new UnprocessableEntityException('An error has occurred');
     }
   }
 
