@@ -7,6 +7,7 @@ import {
   Put,
   Request,
   Delete,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -47,7 +48,11 @@ export class UsersController {
 
   @Get(':name')
   show(@Param('name') name: string) {
-    return this.usersService.findByName(name);
+    const res = this.usersService.findByName(name);
+    if (!res) {
+      throw new NotFoundException("This user don't exist");
+    }
+    return res;
   }
 
   @Put('/update')
