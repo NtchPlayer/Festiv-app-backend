@@ -1,13 +1,13 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
   Param,
+  Post,
   Put,
   Request,
-  Delete,
-  NotFoundException,
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
@@ -32,13 +32,11 @@ export class UsersController {
     //   60 * 60 * 24 * 30,
     // );
 
-    const payload = this.tokenService.buildResponsePayload(
+    return this.tokenService.buildResponsePayload(
       user,
       accessToken,
       // refreshToken,
     );
-
-    return payload;
   }
 
   @Get('festivals')
