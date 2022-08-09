@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { User } from './user.entity';
 import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';
@@ -62,13 +58,6 @@ export class UsersService {
     return compare(password, user.password);
   }
 
-  async showById(id: number): Promise<User> {
-    const user = await this.findById(id);
-
-    delete user.password;
-    return user;
-  }
-
   async findById(id: number): Promise<User> {
     return this.usersRepository.findOneOrFail({
       where: { id },
@@ -109,38 +98,34 @@ export class UsersService {
   }
 
   async findByName(name: string) {
-    try {
-      return await this.usersRepository.findOneOrFail({
-        where: {
-          name,
-        },
-        relations: {
-          tags: true,
-          avatar: true,
-        },
-        select: {
+    return await this.usersRepository.findOne({
+      where: {
+        name,
+      },
+      relations: {
+        tags: true,
+        avatar: true,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        biography: true,
+        birthday: true,
+        isProfessional: true,
+        avatar: {
           id: true,
-          username: true,
-          email: true,
-          name: true,
-          createdAt: true,
-          biography: true,
-          birthday: true,
-          isProfessional: true,
-          avatar: {
-            id: true,
-            url: true,
-            alt: true,
-          },
-          tags: {
-            id: true,
-            content: true,
-          },
+          url: true,
+          alt: true,
         },
-      });
-    } catch {
-      throw new NotFoundException("This user don't exist");
-    }
+        tags: {
+          id: true,
+          content: true,
+        },
+      },
+    });
   }
 
   async updateUser(userId: number, data: UpdateUserDto) {
