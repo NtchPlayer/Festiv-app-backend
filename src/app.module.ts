@@ -12,7 +12,6 @@ import { User } from './users/user.entity';
 import { Publication } from './publications/publication.entity';
 import { Media } from './medias/media.entity';
 import { Tag } from './tags/tag.entity';
-// import { RefreshToken } from './token/refresh-token.entity';
 
 // Controller
 import { AppController } from './app.controller';

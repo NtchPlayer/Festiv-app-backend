@@ -319,7 +319,6 @@ export class PublicationsService {
       const publication = await this.publicationsRepository.findOneBy({ id });
 
       publication.content = updatePublicationDto.content;
-      // publication.media = updatePublicationDto.media;
       return this.publicationsRepository.save(publication);
     } catch (err) {
       throw new NotFoundException("This publication don't exist.");

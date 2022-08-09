@@ -10,7 +10,6 @@ import {
   ManyToMany,
 } from 'typeorm';
 import { hash } from 'bcrypt';
-// import { RefreshToken } from '../token/refresh-token.entity';
 import { Publication } from '../publications/publication.entity';
 import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';

@@ -10,17 +10,12 @@ import { User } from './user.entity';
 import { Media } from '../medias/media.entity';
 import { TagsModule } from '../tags/tags.module';
 import { FilesService } from '../medias/files.service';
-// import { RefreshToken } from '../token/refresh-token.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      Media,
-      // RefreshToken
-    ]),
+    TypeOrmModule.forFeature([User, Media]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async () => ({

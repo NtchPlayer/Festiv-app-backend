@@ -27,16 +27,8 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     const accessToken = await this.tokenService.generateAccessToken(user);
-    // const refreshToken = await this.tokenService.generateRefreshToken(
-    //   user,
-    //   60 * 60 * 24 * 30,
-    // );
 
-    return this.tokenService.buildResponsePayload(
-      user,
-      accessToken,
-      // refreshToken,
-    );
+    return this.tokenService.buildResponsePayload(user, accessToken);
   }
 
   @Get('festivals')

@@ -14,8 +14,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
 import { AuthController } from './auth.controller';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import { RefreshToken } from '../token/refresh-token.entity';
 
 @Module({
   imports: [
@@ -28,7 +26,6 @@ import { AuthController } from './auth.controller';
       }),
       inject: [ConfigService],
     }),
-    // TypeOrmModule.forFeature([RefreshToken]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, TokenService],

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { AuthLoginDto } from './dto';
 import { User } from '../users/user.entity';
@@ -27,16 +31,8 @@ export class AuthService {
     }
 
     const accessToken = await this.tokenService.generateAccessToken(user);
-    // const refreshToken = await this.tokenService.generateRefreshToken(
-    //   user,
-    //   1000 * 60 * 60 * 24 * 30,
-    // );
 
-    return this.tokenService.buildResponsePayload(
-      user,
-      accessToken,
-      // refreshToken,
-    );
+    return this.tokenService.buildResponsePayload(user, accessToken);
   }
 
   async getUser(userId: number): Promise<User> {
