@@ -38,17 +38,22 @@ export class UsersService {
     user.password = createUserDto.password;
     user.isProfessional = createUserDto.isProfessional;
 
-    if (user.isProfessional) {
-      user.tags = [];
-      for (const tag of createUserDto.tags) {
-        const tagEntity = new Tag();
-        tagEntity.content = tag.content;
-        user.tags.push(tagEntity);
-      }
+    if (user.isProfessional && createUserDto.tags) {
+      // user.tags = [];
+      // for (const tag of createUserDto.tags) {
+      //   const tagEntity = new Tag();
+      //   tagEntity.content = tag.content;
+      //   user.tags.push(tagEntity);
+      // }
+      user.tags = await this.assignUserTags(createUserDto.tags);
     }
+    // try {
     const userSave = await this.usersRepository.save(user);
     delete user.password;
     return userSave;
+    // } catch (e) {
+    //   throw e;
+    // }
   }
 
   public async validateCredentials(
@@ -56,6 +61,29 @@ export class UsersService {
     password: string,
   ): Promise<boolean> {
     return compare(password, user.password);
+  }
+
+  async assignUserTags(
+    tags: [{ content?: string; id?: number }],
+    userId?: number,
+  ) {
+    const newTag = [];
+    for (const tag of tags) {
+      const searchTag = await this.tagsService.findOneByContent(tag.content);
+      if (searchTag?.user && searchTag.user.id !== userId) {
+        throw new UnprocessableEntityException(
+          `Le hashtag ${tag.content} est déjà utilisé par le compte ${searchTag.user.name}.`,
+        );
+      } else if (searchTag) {
+        newTag.push(searchTag);
+      } else {
+        const tagEntity = new Tag();
+        tagEntity.content = tag.content;
+        tagEntity.id = tag.id;
+        newTag.push(tagEntity);
+      }
+    }
+    return newTag;
   }
 
   async findById(id: number): Promise<User> {
@@ -150,28 +178,11 @@ export class UsersService {
     user.birthday = data.birthday;
     user.biography = data.biography;
     if (data.tags) {
-      const newTag = [];
-      for (const tag of data.tags) {
-        const searchTag = await this.tagsService.findOneByContent(tag.content);
-        if (searchTag?.user && searchTag.user.id !== userId) {
-          throw new UnprocessableEntityException(
-            `Le hashtag ${tag.content} est déjà utilisé par le compte ${searchTag.user.name}.`,
-          );
-        } else if (searchTag) {
-          newTag.push(searchTag);
-        } else {
-          const tagEntity = new Tag();
-          tagEntity.content = tag.content;
-          tagEntity.id = tag.id;
-          newTag.push(tagEntity);
-        }
-      }
-      user.tags = newTag;
+      user.tags = await this.assignUserTags(data.tags, userId);
     }
     try {
       return await this.usersRepository.save(user);
     } catch (e) {
-      console.log(e);
       throw e;
     }
   }
