@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import { User } from './user.entity';
 import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';
@@ -56,7 +56,11 @@ export class UsersService {
     user: User,
     password: string,
   ): Promise<boolean> {
-    return compare(password, user.password);
+    try {
+      return await compare(password, user.password);
+    } catch {
+      throw new UnprocessableEntityException('Mot de passe manquant.');
+    }
   }
 
   async assignUserTags(
@@ -190,10 +194,41 @@ export class UsersService {
     if (data.tags) {
       user.tags = await this.assignUserTags(data.tags, userId);
     }
+    if (data.newPassword) {
+      await this.updateUserPassword(
+        data.newPassword,
+        data.oldPassword,
+        user.id,
+      );
+    }
     try {
       return await this.usersRepository.save(user);
     } catch (e) {
       throw e;
+    }
+  }
+
+  async updateUserPassword(
+    newPassword: string,
+    oldPassword: string,
+    userId: number,
+  ) {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    const valid = user
+      ? await this.validateCredentials(user, oldPassword)
+      : false;
+    if (!valid) {
+      throw new UnprocessableEntityException(
+        'Votre ancien mot de passe est invalide.',
+      );
+    }
+
+    user.password = newPassword;
+
+    try {
+      return this.usersRepository.save(user);
+    } catch {
+      throw new UnprocessableEntityException();
     }
   }
 
