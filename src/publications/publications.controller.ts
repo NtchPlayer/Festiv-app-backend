@@ -17,7 +17,7 @@ import { PublicationsService } from './publications.service';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { ParseFile } from '../medias/parse-file.pipe';
+import { FilesPublicationPipe } from '../pipes/files-publication.pipe';
 
 @Controller('publications')
 export class PublicationsController {
@@ -53,7 +53,7 @@ export class PublicationsController {
   create(
     @Request() req,
     @Body() createPublicationDto: CreatePublicationDto,
-    @UploadedFiles(ParseFile) files: Express.Multer.File[],
+    @UploadedFiles(FilesPublicationPipe) files: Express.Multer.File[],
   ) {
     return this.publicationsService.create(
       createPublicationDto,
