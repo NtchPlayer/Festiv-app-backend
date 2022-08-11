@@ -18,13 +18,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(36)
-  @Matches(/^\w+$/g)
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(36)
   @IsString()
   username: string;
 
@@ -43,4 +36,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsArray()
   tags: [{ content: string }];
+
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(36)
+  @IsString()
+  name: string;
 }
