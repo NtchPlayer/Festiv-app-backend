@@ -18,6 +18,7 @@ import { Tag } from '../tags/tag.entity';
 import { FilesService } from '../medias/files.service';
 import { UsersService } from '../users/users.service';
 import { TagsService } from '../tags/tags.service';
+import { MediasService } from '../medias/medias.service';
 
 @Injectable()
 export class PublicationsService {
@@ -27,6 +28,7 @@ export class PublicationsService {
     private readonly filesService: FilesService,
     private readonly usersService: UsersService,
     private readonly tagsService: TagsService,
+    private readonly mediasService: MediasService,
   ) {}
 
   private constructorQuerySearch(
@@ -325,16 +327,42 @@ export class PublicationsService {
     }
   }
 
+  async deletePublicationMedias(publicationId: number) {
+    const comments = await this.publicationsRepository.query(
+      `
+        SELECT  id,
+                parentPublicationId
+        FROM    (select * from publications
+                 order by parentPublicationId, id) publications,
+                (select @pv := ?) initialisation
+        WHERE   find_in_set(parentPublicationId, @pv) > 0
+        AND     @pv := concat(@pv, ',', id)
+      `,
+      [publicationId],
+    );
+    await this.mediasService.deleteMediasOfPublication(publicationId, comments);
+  }
+
   async deleteOne(id: number, userId: number) {
     try {
-      return this.publicationsRepository
-        .createQueryBuilder()
-        .delete()
-        .where('id = :id', { id })
-        .andWhere('userId = :userId', { userId })
-        .execute();
+      const publication = await this.publicationsRepository.findOneOrFail({
+        where: {
+          id,
+          user: {
+            id: userId,
+          },
+        },
+        relations: {
+          user: true,
+          medias: true,
+        },
+      });
+      await this.deletePublicationMedias(publication.id);
+      return await this.publicationsRepository.delete(id);
     } catch {
-      throw new UnprocessableEntityException("Can't delete publication");
+      throw new UnprocessableEntityException(
+        'Impossible de supprimer la publication.',
+      );
     }
   }
 }
