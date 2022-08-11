@@ -1,7 +1,7 @@
 import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
 
 @Injectable()
-export class ParseFile implements PipeTransform {
+export class FilesPublicationPipe implements PipeTransform {
   transform(
     files: Express.Multer.File[],
   ): Express.Multer.File | Express.Multer.File[] {
@@ -30,7 +30,7 @@ export class ParseFile implements PipeTransform {
     }
     if (
       files.every(
-        (file) => parseFloat((file.size / 1000000).toPrecision(3)) > 10, // MegaOctet
+        (file) => parseFloat((file.size / 1000000).toPrecision(3)) > 20, // MegaOctet
       )
     ) {
       throw new BadRequestException('Validation failed (files size exceed)');
