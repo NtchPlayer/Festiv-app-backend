@@ -35,7 +35,7 @@ export class Publication {
   })
   updatedAt: Date;
 
-  @Column('varchar', { length: 500 })
+  @Column('text')
   content: string;
 
   @Column('varchar', { length: 36, nullable: true })
