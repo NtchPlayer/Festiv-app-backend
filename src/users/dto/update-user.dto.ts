@@ -1,11 +1,11 @@
 import {
   IsArray,
-  IsEmail,
+  IsEmail, IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
-  MinLength,
-} from 'class-validator';
+  MinLength
+} from "class-validator";
 
 export class UpdateUserDto {
   @IsOptional()
@@ -30,4 +30,16 @@ export class UpdateUserDto {
   @IsOptional()
   @IsArray()
   tags: [{ content: string; id?: number }];
+
+  @IsOptional()
+  @IsString()
+  oldPassword: string;
+
+  @IsOptional()
+  @MinLength(8)
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'Password is too week!',
+  })
+  @IsString()
+  newPassword: string;
 }
