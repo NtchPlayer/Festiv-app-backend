@@ -1,10 +1,7 @@
 import {
   Controller,
   Post,
-  Param,
-  ParseIntPipe,
   Request,
-  Delete,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
@@ -30,10 +27,5 @@ export class MediasController {
       throw new BadRequestException('Invalid file provided');
     }
     return this.mediasService.addUserAvatar(file, parseInt(req.user.userId));
-  }
-
-  @Delete('/:id')
-  async delete(@Param('id', ParseIntPipe) id: number) {
-    return this.mediasService.deletePublicationMedia(id);
   }
 }
