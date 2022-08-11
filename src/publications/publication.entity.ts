@@ -38,7 +38,7 @@ export class Publication {
   @Column('text')
   content: string;
 
-  @Column('varchar', { length: 36, nullable: true })
+  @Column('varchar', { length: 36, nullable: true, unique: true })
   folder: string;
 
   @ManyToOne(() => User, (user) => user.publications, {
