@@ -56,13 +56,35 @@ export class MediasService {
     }
   }
 
-  async deletePublicationMedia(id: number) {
+  async getPublicationMediasKey(id: number) {
     try {
-      const publication = await this.mediasRepository.findOneBy({ id });
-      await this.filesService.deleteFile(publication.key);
-      return this.mediasRepository.delete(id);
+      const medias = await this.mediasRepository.find({
+        where: {
+          publication: {
+            id: id,
+          },
+        },
+      });
+      return medias.map((media) => {
+        return {
+          Key: media.key,
+        };
+      });
     } catch {
-      throw new NotFoundException('An error occur on delete media');
+      throw new NotFoundException("Le média n'a pas été trouvé.");
     }
+  }
+
+  async deleteMediasOfPublication(
+    parentId: number,
+    comments: [{ id: number; parentPublicationId: number }],
+  ) {
+    const mediasToDelete = [];
+    for (const comment of comments) {
+      mediasToDelete.push(...(await this.getPublicationMediasKey(comment.id)));
+    }
+    mediasToDelete.push(...(await this.getPublicationMediasKey(parentId)));
+
+    await this.filesService.deleteFiles(mediasToDelete);
   }
 }
