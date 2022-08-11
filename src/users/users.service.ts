@@ -21,11 +21,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const isEmailExist = await this.findByEmail(createUserDto.email);
-    if (isEmailExist) {
-      throw new UnprocessableEntityException('Email is use');
-    }
-
+    await this.checkIfUserEmailExist(createUserDto.email);
     const isNameExist = await this.findByName(createUserDto.name);
     if (isNameExist) {
       throw new UnprocessableEntityException('Name is use');
@@ -84,6 +80,16 @@ export class UsersService {
       }
     }
     return newTag;
+  }
+
+  async checkIfUserEmailExist(email: string) {
+    const isEmailExist = await this.findByEmail(email);
+    if (isEmailExist) {
+      throw new UnprocessableEntityException(
+        'Un utilisateur utilise déjà cette email.',
+      );
+    }
+    return false;
   }
 
   async findById(id: number): Promise<User> {
@@ -174,6 +180,10 @@ export class UsersService {
     });
 
     user.username = data.username;
+    if (data.email && user.email !== data.email) {
+      await this.checkIfUserEmailExist(data.email);
+      user.email = data.email;
+    }
     user.email = data.email;
     user.birthday = data.birthday;
     user.biography = data.biography;
