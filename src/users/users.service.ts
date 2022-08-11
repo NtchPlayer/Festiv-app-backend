@@ -22,6 +22,9 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     await this.checkIfUserEmailExist(createUserDto.email);
+    if (!createUserDto.name.match(/^\w+$/g)) {
+      throw new UnprocessableEntityException('Le nom est invalide.');
+    }
     const isNameExist = await this.findByName(createUserDto.name);
     if (isNameExist) {
       throw new UnprocessableEntityException('Name is use');
