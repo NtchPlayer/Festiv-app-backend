@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   ManyToMany,
+  BeforeUpdate,
 } from 'typeorm';
 import { hash } from 'bcrypt';
 import { Publication } from '../publications/publication.entity';
@@ -79,7 +80,10 @@ export class User {
   userLikes: Publication[];
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword() {
-    this.password = await hash(this.password, 8);
+    if (this.password) {
+      this.password = await hash(this.password, 8);
+    }
   }
 }
