@@ -51,7 +51,7 @@ import { TagsModule } from './tags/tags.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [User, Publication, Media, Tag],
-      synchronize: Boolean(process.env.IS_DEV) || false,
+      synchronize: true,
     }),
     AuthModule,
     UsersModule,
