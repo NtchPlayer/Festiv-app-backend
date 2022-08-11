@@ -10,7 +10,9 @@ export class ParseFile implements PipeTransform {
     }
     if (
       !files.every((file) =>
-        file.originalname.match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|m4v|avi)$/),
+        file.originalname
+          .toLowerCase()
+          .match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|m4v|avi)$/),
       )
     ) {
       throw new BadRequestException(
