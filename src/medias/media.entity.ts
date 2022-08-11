@@ -36,7 +36,7 @@ export class Media {
   @Column('text')
   url: string;
 
-  @Column('text', { unique: true })
+  @Column('text')
   key: string;
 
   @Column('varchar', { length: 250, nullable: true })
