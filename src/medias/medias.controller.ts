@@ -12,6 +12,7 @@ import {
 
 import { MediasService } from './medias.service';
 import { Express } from 'express';
+import { FileAvatarPipe } from '../pipes/file-avatar.pipe';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -21,7 +22,10 @@ export class MediasController {
 
   @Post('avatar')
   @UseInterceptors(FileInterceptor('avatar'))
-  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Request() req) {
+  uploadAvatar(
+    @UploadedFile(FileAvatarPipe) file: Express.Multer.File,
+    @Request() req,
+  ) {
     if (!file || req.fileValidationError) {
       throw new BadRequestException('Invalid file provided');
     }
