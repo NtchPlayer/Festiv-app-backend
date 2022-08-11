@@ -85,6 +85,9 @@ export class MediasService {
     }
     mediasToDelete.push(...(await this.getPublicationMediasKey(parentId)));
 
+    if (mediasToDelete.length === 0) {
+      return;
+    }
     await this.filesService.deleteFiles(mediasToDelete);
   }
 }
