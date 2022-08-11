@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { User } from './user.entity';
 import { Media } from '../medias/media.entity';
 import { Tag } from '../tags/tag.entity';

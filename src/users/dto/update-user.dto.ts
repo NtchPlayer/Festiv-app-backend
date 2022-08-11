@@ -1,11 +1,11 @@
 import {
   IsArray,
-  IsEmail, IsNotEmpty,
+  IsEmail,
   IsOptional,
   IsString,
   Matches,
-  MinLength
-} from "class-validator";
+  MinLength,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
