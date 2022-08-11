@@ -23,7 +23,9 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     await this.checkIfUserEmailExist(createUserDto.email);
     if (!createUserDto.name.match(/^\w+$/g)) {
-      throw new UnprocessableEntityException('Le nom est invalide.');
+      throw new UnprocessableEntityException(
+        'Le nom unique contient des caractères interdits.',
+      );
     }
     const isNameExist = await this.findByName(createUserDto.name);
     if (isNameExist) {
