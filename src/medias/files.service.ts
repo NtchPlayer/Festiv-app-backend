@@ -67,7 +67,9 @@ export class FilesService {
       })
       .catch((err) => {
         console.log(err);
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException(
+          "Les médias n'ont pas pu être supprimés.",
+        );
       });
   }
 }
