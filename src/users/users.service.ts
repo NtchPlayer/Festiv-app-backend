@@ -271,14 +271,17 @@ export class UsersService {
         publication: {},
       },
     });
-    await this.filesService.deleteFile(user.avatar.key);
-    await this.filesService.deleteFiles(
-      mediasToDelete.map((media) => {
-        return {
-          Key: media.key,
-        };
-      }),
-    );
+    if (user.avatar.key) {
+      await this.filesService.deleteFile(user.avatar.key);
+    }
+    const medias = mediasToDelete.map((media) => {
+      return {
+        Key: media.key,
+      };
+    });
+    if (medias.length !== 0) {
+      await this.filesService.deleteFiles(medias);
+    }
     return this.usersRepository.delete(id);
   }
 }
