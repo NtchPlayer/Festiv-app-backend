@@ -37,6 +37,7 @@ export class PublicationsService {
     hashtag?: string,
     q?: string,
   ) {
+    let getComment = true;
     let searchQuery = '[nameSearch] [contentSearch] [hashtagSearch]';
 
     const separatorNameContent = name && q ? 'AND' : '';
@@ -60,8 +61,9 @@ export class PublicationsService {
 
     if (!name && !hashtag && !q) {
       searchQuery = '1=1';
+      getComment = false;
     }
-    return this.performQuery(userId, searchQuery);
+    return this.performQuery(userId, searchQuery, getComment);
   }
 
   private async performQuery(
@@ -75,7 +77,8 @@ export class PublicationsService {
         publications.id,
         publications.createdAt,
         publications.content,
-        publications.parentPublicationId,
+        # publications.parentPublicationId,
+        GROUP_CONCAT(DISTINCT CONCAT(parentPublication.id,',',userParentPublication.name,',',userParentPublication.username) SEPARATOR ';') AS parentPublication,
         GROUP_CONCAT(DISTINCT CONCAT(userPublication.id,',',userPublication.name,',',userPublication.username) SEPARATOR ';') AS user,
         GROUP_CONCAT(DISTINCT CONCAT(mediasUser.url,',',COALESCE(mediasUser.alt, 'NULL')) SEPARATOR ';') AS userAvatar,
         GROUP_CONCAT(DISTINCT CONCAT(mediasTable.url,',',COALESCE(mediasTable.alt, 'NULL'),',',mediasTable.type) SEPARATOR ';') AS medias,
@@ -96,6 +99,9 @@ export class PublicationsService {
       LEFT JOIN medias AS mediasUser ON mediasUser.userId = publications.userId
       # medias
       LEFT JOIN medias AS mediasTable ON mediasTable.publicationId = publications.id
+      # parentPublication
+      LEFT JOIN publications AS parentPublication ON parentPublication.id = publications.parentPublicationId
+      LEFT JOIN users AS userParentPublication ON userParentPublication.id = parentPublication.userId
       # comments
       LEFT JOIN publications AS childPublication ON childPublication.parentPublicationId = publications.id
       WHERE [searchQuery] [getComment]
@@ -114,6 +120,7 @@ export class PublicationsService {
     query = query.replace('[commentsQuery]', commentsQuery);
 
     const results = await this.publicationsRepository.query(query, [userId]);
+    console.log(results);
 
     if (results.length === 0) {
       throw new NotFoundException();
@@ -139,6 +146,13 @@ export class PublicationsService {
         ['id', 'name', 'username'],
         false,
       );
+      result.parentPublication = result.parentPublication
+        ? this.formattedElement(
+            result.parentPublication,
+            ['id', 'name', 'username'],
+            false,
+          )
+        : null;
       result.user.avatar = result.userAvatar
         ? this.formattedElement(result.userAvatar, ['url', 'alt'], false)
         : null;
@@ -186,7 +200,11 @@ export class PublicationsService {
   }
 
   async findByName(name: string, userId: number): Promise<Publication[]> {
-    return await this.performQuery(userId, `userPublication.name = '${name}'`);
+    return await this.performQuery(
+      userId,
+      `userPublication.name = '${name}'`,
+      true,
+    );
   }
 
   async findOne(id: number, userId: number): Promise<Publication> {
